@@ -16,7 +16,7 @@
             color: #fff;
             margin: 0;
             padding: 0 0 60px 0; 
-            overflow-x: hidden; /* Prevent horizontal scroll */
+            overflow-x: hidden;
         }
 
         /* --- HEADER --- */
@@ -73,7 +73,7 @@
         #sideMenu {
             position: fixed;
             top: 0;
-            left: -280px; /* Hidden by default */
+            left: -280px; 
             width: 280px;
             height: 100%;
             background: #1e1e2d;
@@ -203,7 +203,7 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- MODALS (Detail, Categories, Request) --- */
+        /* --- MODALS --- */
         .movie-detail, .modal-overlay { 
             display: none; 
             position: fixed; 
@@ -238,7 +238,7 @@
         #inModalPlayerContainer {
             width: 100%;
             background: #000;
-            margin-bottom: 5px; /* Reduced margin */
+            margin-bottom: 5px;
             display: none; 
             position: relative;
         }
@@ -329,18 +329,9 @@
     <div style="padding: 0 20px 20px 20px;">
         <h2 style="color: #ff8c1a; border-bottom: 1px solid #444; padding-bottom: 10px;">Menu</h2>
     </div>
-    
-    <div class="side-link" onclick="handleNavClick('popular', null); toggleSideMenu()">
-        <i class="fas fa-star" style="color: gold;"></i> Popular Content
-    </div>
-    
-    <div class="side-link" onclick="openRequestModal(); toggleSideMenu()">
-        <i class="fas fa-envelope-open-text" style="color: #00e676;"></i> Request Movie
-    </div>
-
-    <div class="side-link" onclick="window.location.reload()">
-        <i class="fas fa-sync" style="color: #29b6f6;"></i> Refresh App
-    </div>
+    <div class="side-link" onclick="handleNavClick('popular', null); toggleSideMenu()"><i class="fas fa-star" style="color: gold;"></i> Popular Content</div>
+    <div class="side-link" onclick="openRequestModal(); toggleSideMenu()"><i class="fas fa-envelope-open-text" style="color: #00e676;"></i> Request Movie</div>
+    <div class="side-link" onclick="window.location.reload()"><i class="fas fa-sync" style="color: #29b6f6;"></i> Refresh App</div>
 </div>
 
 <div class="header" id="pageHeader">
@@ -368,7 +359,7 @@
         <div class="close-btn-fixed" onclick="closeDetail()">&times;</div>
         
         <div id="inModalPlayerContainer">
-            <video id="inModalVideoPlayer" controls playsinline preload="metadata">
+            <video id="inModalVideoPlayer" controls controlsList="nodownload" playsinline preload="metadata">
                 <source id="inModalVideoSource" src="">
             </video>
         </div>
@@ -389,9 +380,8 @@
         
         <div id="movieButtons">
             <button id="playBtn" class="btn" style="background: #ff4d4d; color: white;">Play Movie</button>
-            <button id="downloadBtn" class="btn" style="background: #3f51b5; color: white;">Download</button>
             <button id="favoriteBtn" class="btn" style="background: #e91e63; color: white;">Add to Favorites</button>
-            <button id="otherDownloadBtn" class="btn" style="background: #009688; color: white; display: none;">Alternative Download</button>
+            <button id="otherDownloadBtn" class="btn" style="background: #009688; color: white; display: none;">Download Movie</button>
         </div>
     </div>
 </div>
@@ -400,8 +390,6 @@
     <div class="modal-box">
         <div class="close-btn-fixed" onclick="document.getElementById('requestModal').style.display='none'">&times;</div>
         <h2 style="color: #00e676; text-align: center;">Request Content</h2>
-        <p style="text-align: center; color: #aaa; font-size: 12px; margin-bottom: 20px;">Let us know what you want to watch!</p>
-        
         <div class="form-group">
             <label class="form-label">Type:</label>
             <select id="reqType" class="form-select">
@@ -409,12 +397,10 @@
                 <option value="Series">Web Series</option>
             </select>
         </div>
-        
         <div class="form-group">
             <label class="form-label">Name:</label>
-            <input type="text" id="reqName" class="form-input" placeholder="e.g. Pathaan, Money Heist...">
+            <input type="text" id="reqName" class="form-input" placeholder="e.g. Pathaan...">
         </div>
-        
         <button class="btn" onclick="submitRequest()" style="background: #00e676; color: #000;">Send Request</button>
     </div>
 </div>
@@ -435,38 +421,27 @@
 </div>
 
 <div id="bottomNav">
-    <div class="nav-item-btn active" onclick="window.location.reload()">
-        <i class="fas fa-home"></i> <span>Home</span>
-    </div>
-    <div class="nav-item-btn" onclick="showCategoriesOverlay()">
-        <i class="fas fa-tags"></i> <span>Categories</span>
-    </div>
-    <div class="nav-item-btn" onclick="handleNavClick('movie', this)">
-        <i class="fas fa-film"></i> <span>Movies</span>
-    </div>
-    <div class="nav-item-btn" onclick="handleNavClick('series', this)">
-        <i class="fas fa-tv"></i> <span>Series</span>
-    </div>
-    <div class="nav-item-btn" onclick="handleNavClick('favorites', this)">
-        <i class="fas fa-heart"></i> <span>Favorites</span>
-    </div>
+    <div class="nav-item-btn active" onclick="window.location.reload()"><i class="fas fa-home"></i> <span>Home</span></div>
+    <div class="nav-item-btn" onclick="showCategoriesOverlay()"><i class="fas fa-tags"></i> <span>Categories</span></div>
+    <div class="nav-item-btn" onclick="handleNavClick('movie', this)"><i class="fas fa-film"></i> <span>Movies</span></div>
+    <div class="nav-item-btn" onclick="handleNavClick('series', this)"><i class="fas fa-tv"></i> <span>Series</span></div>
+    <div class="nav-item-btn" onclick="handleNavClick('favorites', this)"><i class="fas fa-heart"></i> <span>Favorites</span></div>
 </div>
 
 <script>
     // --- FIREBASE CONFIG ---
     const firebaseConfig = {
-    apiKey: "AIzaSyAzMuU6FOaYUnhFCfwbhOxDbfQiWG_LGQM",
-    authDomain: "pk-movies-a6fbc.firebaseapp.com",
-    databaseURL: "https://pk-movies-a6fbc-default-rtdb.firebaseio.com",
-    projectId: "pk-movies-a6fbc",
-    storageBucket: "pk-movies-a6fbc.firebasestorage.app",
-    messagingSenderId: "887789225438",
-    appId: "1:887789225438:web:db267440fcc5703881494f"
+        apiKey: "AIzaSyAzMuU6FOaYUnhFCfwbhOxDbfQiWG_LGQM",
+        authDomain: "pk-movies-a6fbc.firebaseapp.com",
+        databaseURL: "https://pk-movies-a6fbc-default-rtdb.firebaseio.com",
+        projectId: "pk-movies-a6fbc",
+        storageBucket: "pk-movies-a6fbc.firebasestorage.app",
+        messagingSenderId: "887789225438",
+        appId: "1:887789225438:web:db267440fcc5703881494f"
     };
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     
-    // --- VARIABLES ---
     const grid = document.getElementById("movieGrid");
     const spinner = document.getElementById("loadingSpinner");
     const paginationControls = document.querySelector('.pagination-controls');
@@ -483,7 +458,6 @@
     let currentDetailMovieKey = null;
     let currentPlaybackID = null; 
 
-    // --- ADS LIST (unchanged) ---
     const adLinks = [
         "https://www.effectivegatecpm.com/yz4z5szmf?key=73186bcddd33133e4b3c585292f10bde",
         "https://www.effectivegatecpm.com/s2mq62in?key=b17a7185381af8ce5baa404d8817d708",
@@ -494,24 +468,19 @@
         "https://www.effectivegatecpm.com/uz50mzu3f?key=efec633d14ae4a27a4a0aa1aa41c9c7e"
     ]; 
 
-    // --- INITIALIZATION ---
     window.onload = function() {
         loadData();
         setupVideoEvents(); 
         setTimeout(() => { showAdPopup(null, 0); }, 10000); 
     };
 
-    // --- DATA LOADING ---
     async function loadData() {
         spinner.style.display = 'block';
-        grid.innerHTML = '';
-        
         try {
             const [moviesSnap, popularSnap] = await Promise.all([
                 database.ref('movies').once('value'),
                 database.ref('popular_movies').once('value')
             ]);
-
             allContent = [];
             moviesSnap.forEach(child => {
                 let val = child.val();
@@ -519,7 +488,6 @@
                 val.type = val.type || (val.episodes ? 'series' : 'movie');
                 if(!val.isPopular) allContent.push(val);
             });
-
             popularContent = [];
             popularSnap.forEach(child => {
                 let val = child.val();
@@ -528,90 +496,46 @@
                 val.type = val.type || 'movie';
                 popularContent.push(val);
             });
-
             allContent.reverse();
             popularContent.reverse();
-
             setFilter('all');
-
         } catch (error) {
-            console.error(error);
-            grid.innerHTML = '<p style="text-align:center;width:100%">Error loading content.</p>';
+            grid.innerHTML = '<p>Error loading content.</p>';
         } finally {
             spinner.style.display = 'none';
         }
     }
 
-    // --- NAVIGATION HANDLER ---
-    function handleNavClick(filter, element) {
-        if(element) {
-            document.querySelectorAll('.nav-item-btn').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-        }
-
-        spinner.style.display = 'block';
-        grid.innerHTML = '';
-        document.getElementById("searchBar").value = '';
-        closeDetail();
-        
-        setTimeout(() => {
-            setFilter(filter);
-            spinner.style.display = 'none';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 300);
-    }
-
-    // --- FILTER & RENDER LOGIC ---
     function setFilter(filter) {
         currentFilterType = filter;
-        
-        if (filter === 'all') {
-            filteredMovies = [...allContent, ...popularContent];
-        } else if (filter === 'movie') {
-            filteredMovies = allContent.filter(m => m.type === 'movie');
-        } else if (filter === 'series') {
-            filteredMovies = allContent.filter(m => m.type === 'series');
-        } else if (filter === 'popular') {
-            filteredMovies = popularContent;
-        } else if (filter === 'favorites') {
+        if (filter === 'all') filteredMovies = [...allContent, ...popularContent];
+        else if (filter === 'movie') filteredMovies = allContent.filter(m => m.type === 'movie');
+        else if (filter === 'series') filteredMovies = allContent.filter(m => m.type === 'series');
+        else if (filter === 'popular') filteredMovies = popularContent;
+        else if (filter === 'favorites') {
             const favKeys = JSON.parse(localStorage.getItem('favs') || '[]');
             filteredMovies = [...allContent, ...popularContent].filter(m => favKeys.includes(m.key));
-        } else {
-            // Category
-            filteredMovies = [...allContent, ...popularContent].filter(m => m.category === filter);
-        }
-
+        } else filteredMovies = [...allContent, ...popularContent].filter(m => m.category === filter);
         currentPage = 1;
         renderPage(currentPage);
     }
 
-    // --- RENDER PAGE ---
     function renderPage(page) {
         const start = (page - 1) * MOVIES_PER_PAGE;
-        const end = start + MOVIES_PER_PAGE;
-        const pageItems = filteredMovies.slice(start, end);
+        const pageItems = filteredMovies.slice(start, start + MOVIES_PER_PAGE);
         const totalPages = Math.ceil(filteredMovies.length / MOVIES_PER_PAGE);
-
         if (pageItems.length === 0) {
-            grid.innerHTML = `<p style="text-align: center; grid-column: 1/-1; padding: 20px;">No content found.</p>`;
+            grid.innerHTML = `<p style="text-align: center; grid-column: 1/-1;">No content found.</p>`;
             paginationControls.style.display = 'none';
             return;
         }
-
-        let htmlBuffer = '';
-        pageItems.forEach(movie => {
-            const tag = movie.isPopular ? 'Popular' : (movie.type === 'series' ? 'Series' : 'Movie');
-            htmlBuffer += `
-                <div class="movie-card" onclick="openDetail('${movie.key}')">
-                    <img src="${movie.img}" loading="lazy" alt="${movie.title}">
-                    <p>${movie.title}</p>
-                    <span class="category-badge">${movie.category} | ${tag}</span>
-                </div>
-            `;
-        });
-        
-        grid.innerHTML = htmlBuffer; 
-
+        grid.innerHTML = pageItems.map(movie => `
+            <div class="movie-card" onclick="openDetail('${movie.key}')">
+                <img src="${movie.img}" loading="lazy" alt="${movie.title}">
+                <p>${movie.title}</p>
+                <span class="category-badge">${movie.category} | ${movie.isPopular ? 'Popular' : (movie.type === 'series' ? 'Series' : 'Movie')}</span>
+            </div>
+        `).join('');
         paginationControls.style.display = totalPages > 1 ? 'flex' : 'none';
         document.getElementById("prevBtn").disabled = page === 1;
         document.getElementById("nextBtn").disabled = page >= totalPages;
@@ -623,29 +547,19 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // --- SEARCH ---
-    let searchTimeout;
     function debounceFilter() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            const q = document.getElementById("searchBar").value.toUpperCase();
-            if(!q) return setFilter('all');
-            
-            filteredMovies = [...allContent, ...popularContent].filter(m => m.title.toUpperCase().includes(q));
-            currentPage = 1;
-            renderPage(1);
-        }, 500);
+        const q = document.getElementById("searchBar").value.toUpperCase();
+        if(!q) return setFilter('all');
+        filteredMovies = [...allContent, ...popularContent].filter(m => m.title.toUpperCase().includes(q));
+        renderPage(1);
     }
 
-    // --- DETAIL MODAL LOGIC ---
     function openDetail(key) {
         const movie = [...allContent, ...popularContent].find(m => m.key === key);
         if(!movie) return;
-
         currentDetailData = movie;
         currentDetailMovieKey = key;
 
-        // Populate UI 
         document.getElementById("modalImg").src = movie.img;
         document.getElementById("modalTitle").innerText = movie.title;
         document.getElementById("modalDesc").innerText = movie.genres || '';
@@ -654,316 +568,113 @@
 
         const playerContainer = document.getElementById("inModalPlayerContainer");
         const playBtn = document.getElementById("playBtn");
-        const downloadBtn = document.getElementById("downloadBtn");
         const otherBtn = document.getElementById("otherDownloadBtn");
         const seriesContainer = document.getElementById("seriesEpisodeContainer");
-        const favBtn = document.getElementById("favoriteBtn");
 
-        // Reset Player
         playerContainer.style.display = 'none';
         videoPlayer.pause();
         videoPlayer.src = '';
         
-        document.getElementById("playbackInfo").style.display = 'none';
-        document.getElementById("playbackInfo").innerText = '';
-
-        // Favorite Button State 
         updateFavBtnState(key);
-        favBtn.onclick = () => toggleFavorite(key);
+        document.getElementById("favoriteBtn").onclick = () => toggleFavorite(key);
 
-        // Other Download Button 
+        // Combined Download logic for Alternative Download Button
         if(movie.otherDownloadLink && movie.otherDownloadLink.length > 5) {
             otherBtn.style.display = 'block';
-            otherBtn.onclick = () => window.open(movie.otherDownloadLink, '_blank');
+            otherBtn.innerText = "Download Movie";
+            // Show ad first, then open the link
+            otherBtn.onclick = () => showAdPopup(movie.otherDownloadLink, 15);
         } else {
             otherBtn.style.display = 'none';
         }
 
         if(movie.type === 'series') {
-            // SERIES MODE 
             playBtn.style.display = 'none';
-            downloadBtn.style.display = 'none';
             seriesContainer.style.display = 'block';
-            
-            // Populate Seasons 
             const seasonSelect = document.getElementById("seasonSelect");
             seasonSelect.innerHTML = '';
-            const count = movie.seasons || 1;
-            for(let i=1; i<=count; i++) {
+            for(let i=1; i<=(movie.seasons || 1); i++) {
                 const opt = document.createElement("option");
-                opt.value = `S${i}`;
-                opt.innerText = `Season ${i}`;
+                opt.value = `S${i}`; opt.innerText = `Season ${i}`;
                 seasonSelect.appendChild(opt);
             }
             displaySeasonEpisodes('S1');
-
         } else {
-            // MOVIE MODE 
             playBtn.style.display = 'block';
-            downloadBtn.style.display = 'block';
             seriesContainer.style.display = 'none';
-
-            // Pass key as the playback ID for movies
             playBtn.onclick = () => playVideo(movie.play, key, movie.title);
-            downloadBtn.onclick = () => showAdPopup(movie.download, 20);
         }
-
         document.getElementById("modal").style.display = "block";
     }
 
     function closeDetail() {
-        const modal = document.getElementById("modal");
-        
-        // Save the video's last position when the modal closes
-        if (currentPlaybackID && !videoPlayer.ended && videoPlayer.currentTime > 0) {
+        if (currentPlaybackID && !videoPlayer.paused) {
             localStorage.setItem(`playback_${currentPlaybackID}`, videoPlayer.currentTime.toString());
-            console.log(`Last position saved: ${videoPlayer.currentTime.toFixed(2)} seconds`);
         }
-        
         videoPlayer.pause();
         videoPlayer.src = '';
-        videoPlayer.load();
-        document.getElementById("inModalPlayerContainer").style.display = 'none';
+        document.getElementById("modal").style.display = "none";
         currentPlaybackID = null;
-        
-        document.getElementById("playbackInfo").style.display = 'none';
-        
-        modal.style.display = "none";
-        currentDetailData = null;
     }
 
-    // --- VIDEO PLAYER - Function to Play from Last Position ---
-    function playVideo(url, playbackID, seriesTitle = 'Movie', season = '', episodeTitle = '') {
-        if(!url) return alert("Link is not available");
-        
-        const container = document.getElementById("inModalPlayerContainer");
-        const infoDiv = document.getElementById("playbackInfo");
-
-        // Set up the video
-        videoPlayer.pause();
+    function playVideo(url, playbackID, title, season = '', epTitle = '') {
+        if(!url) return alert("Link not available");
         videoPlayer.src = url;
-        currentPlaybackID = playbackID; 
+        currentPlaybackID = playbackID;
+        document.getElementById("inModalPlayerContainer").style.display = 'block';
         
-        container.style.display = 'block';
-        
-        // Show playback information
-        if (seriesTitle !== 'Movie' && season && episodeTitle) {
-            const epNumMatch = episodeTitle.match(/(\d+)/);
-            const epNum = epNumMatch ? epNumMatch[1] : '?';
-            infoDiv.innerText = `Season ${season.slice(1)} - Episode ${epNum}`;
-            infoDiv.style.display = 'block';
-        } else {
-            infoDiv.innerText = seriesTitle;
-            infoDiv.style.display = 'block';
-        }
+        const info = document.getElementById("playbackInfo");
+        info.innerText = season ? `S${season.slice(1)} - ${epTitle}` : title;
+        info.style.display = 'block';
 
-        // On video load
-        videoPlayer.addEventListener('loadedmetadata', function handleLoad() {
-            videoPlayer.removeEventListener('loadedmetadata', handleLoad);
-            
-            if (videoPlayer.duration > 0) {
-                // Get the previous position from local storage
-                const savedTime = localStorage.getItem(`playback_${currentPlaybackID}`);
-                
-                if (savedTime && savedTime > 0) {
-                    // Start playing from 10 seconds back
-                    const resumeTime = Math.max(0, parseFloat(savedTime) - 10);
-                    videoPlayer.currentTime = resumeTime;
-                    
-                    // Notify the user
-                    const minutes = Math.floor(resumeTime / 60);
-                    const seconds = Math.floor(resumeTime % 60);
-                    
-                }
-                
-                // Play the video
-                videoPlayer.play().catch(e => {
-                    console.log("The user will have to press the play button manually");
-                });
-            }
-        });
-
-        // Load the video
-        videoPlayer.load();
-        
-        // Scroll up
+        videoPlayer.onloadedmetadata = () => {
+            const saved = localStorage.getItem(`playback_${playbackID}`);
+            if(saved) videoPlayer.currentTime = Math.max(0, parseFloat(saved) - 10);
+            videoPlayer.play();
+        };
         document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // --- VIDEO EVENT HANDLERS - For saving video position ---
     function setupVideoEvents() {
-        
-        // Save the video position every 5 seconds
-        let saveTimeout;
-        videoPlayer.ontimeupdate = function() {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => {
-                if (currentPlaybackID && !videoPlayer.paused && !videoPlayer.ended) {
-                    // Only save if played for more than 5 seconds
-                    if (videoPlayer.currentTime > 5) {
-                        localStorage.setItem(`playback_${currentPlaybackID}`, videoPlayer.currentTime.toString());
-                    }
-                }
-            }, 1000);
-        };
-        
-        // Save immediately when the video pauses
-        videoPlayer.onpause = function() {
-            if (currentPlaybackID && !videoPlayer.ended) {
+        videoPlayer.ontimeupdate = () => {
+            if (currentPlaybackID && videoPlayer.currentTime > 5) {
                 localStorage.setItem(`playback_${currentPlaybackID}`, videoPlayer.currentTime.toString());
             }
         };
-        
-        // Delete the position when the video ends
-        videoPlayer.onended = function() {
-            if (currentPlaybackID) {
-                localStorage.removeItem(`playback_${currentPlaybackID}`);
-                currentPlaybackID = null;
-            }
-        };
     }
 
-    // --- SERIES EPISODES ---
     function displaySeasonEpisodes(season) {
-    const list = document.getElementById("episodeList");
-    
-    // 1. پہلے لسٹ کو خالی کریں اور ویل (Spinner) دکھائیں
-    list.innerHTML = `
-        <div style="text-align: center; padding: 20px;">
-            <div class="spinner" style="width: 30px; height: 30px; border-width: 3px;"></div>
-            <p style="font-size: 12px; color: #888;">Loading Episodes...</p>
-        </div>
-    `;
-    
-    // 2. ڈیڑھ سیکنڈ (1500ms) کا انتظار کریں
-    setTimeout(() => {
-        list.innerHTML = ''; // لوڈنگ ختم کریں
-        
-        if(!currentDetailData.episodes || !currentDetailData.episodes[season]) {
-            list.innerHTML = '<p style="color:#888; text-align:center;">No episodes added yet.</p>';
-            return;
-        }
-
-        const eps = currentDetailData.episodes[season];
-        const seriesTitle = currentDetailData.title.replace(/'/g, "\\'");
-        
-        let htmlBuffer = '';
-        Object.keys(eps).sort((a,b) => parseInt(a.slice(3)) - parseInt(b.slice(3))).forEach(key => {
-            const ep = eps[key];
-            const playbackID = `${currentDetailMovieKey}_${season}_${key}`;
-            
-            htmlBuffer += `
-                <div class="episode-item">
-                    <span>${ep.title}</span>
-                    <div class="ep-actions">
-                        <button class="ep-play" onclick="playVideo('${ep.link}', '${playbackID}', '${seriesTitle}', '${season}', '${ep.title.replace(/'/g, "\\'")}')">Play</button>
-                        <button class="ep-down" onclick="showAdPopup(null, 10)">Download</button> 
-                    </div>
-                </div>
-            `;
-        });
-        list.innerHTML = htmlBuffer;
-    }, 1500); // یہاں 1500 کا مطلب ڈیڑھ سیکنڈ ہے
-}
-
-
-    // --- REST OF THE CODE ---
-    function toggleSideMenu() {
-        const menu = document.getElementById("sideMenu");
-        const overlay = document.querySelector(".side-overlay");
-        menu.classList.toggle("active");
-        overlay.classList.toggle("active");
-    }
-
-    function openRequestModal() {
-        document.getElementById("requestModal").style.display = 'flex';
-    }
-
-    function submitRequest() {
-        const type = document.getElementById("reqType").value;
-        const name = document.getElementById("reqName").value.trim();
-        
-        if(!name) return alert("Please enter a name");
-        
-        const reqBtn = document.querySelector("#requestModal .btn");
-        reqBtn.disabled = true;
-        reqBtn.innerText = "Sending...";
-
-        database.ref('requests').push({
-            type: type,
-            name: name,
-            timestamp: Date.now()
-        }).then(() => {
-            alert("Request sent successfully!");
-            document.getElementById("requestModal").style.display = 'none';
-            document.getElementById("reqName").value = '';
-        }).finally(() => {
-            reqBtn.disabled = false;
-            reqBtn.innerText = "Send Request";
-        });
-    }
-
-    function toggleFavorite(key) {
-        let favs = JSON.parse(localStorage.getItem('favs') || '[]');
-        if(favs.includes(key)) {
-            favs = favs.filter(k => k !== key);
-        } else {
-            favs.push(key);
-        }
-        localStorage.setItem('favs', JSON.stringify(favs));
-        updateFavBtnState(key);
-    }
-
-    function updateFavBtnState(key) {
-        const favs = JSON.parse(localStorage.getItem('favs') || '[]');
-        const btn = document.getElementById("favoriteBtn");
-        if(favs.includes(key)) {
-            btn.style.background = "#4caf50";
-            btn.innerText = "Saved to Favorites";
-        } else {
-            btn.style.background = "#e91e63";
-            btn.innerText = "Add to Favorites";
-        }
-    }
-
-    function showCategoriesOverlay() {
-        document.getElementById("categoriesOverlay").style.display = 'flex';
-        const list = document.getElementById("categoryListOverlay");
-        list.innerHTML = '<p>Loading...</p>';
-        
-        database.ref('categories').once('value', snap => {
+        const list = document.getElementById("episodeList");
+        list.innerHTML = '<div class="spinner" style="width:20px;height:20px;"></div>';
+        setTimeout(() => {
             list.innerHTML = '';
-            snap.forEach(c => {
-                const name = c.val();
-                const btn = document.createElement("div");
-                btn.className = "category-btn-item";
-                btn.innerText = name;
-                btn.onclick = () => {
-                    handleNavClick(name, null);
-                    closeCategoriesOverlay();
-                };
-                list.appendChild(btn);
+            const eps = currentDetailData.episodes?.[season];
+            if(!eps) { list.innerHTML = 'No episodes.'; return; }
+            Object.keys(eps).sort((a,b)=>parseInt(a.slice(3))-parseInt(b.slice(3))).forEach(k => {
+                const ep = eps[k];
+                const pID = `${currentDetailMovieKey}_${season}_${k}`;
+                list.innerHTML += `
+                    <div class="episode-item">
+                        <span>${ep.title}</span>
+                        <div class="ep-actions">
+                            <button class="ep-play" onclick="playVideo('${ep.link}', '${pID}', '', '${season}', '${ep.title}')">Play</button>
+                            <button class="ep-down" onclick="showAdPopup('${ep.download || ''}', 15)">Download</button>
+                        </div>
+                    </div>`;
             });
-        });
-    }
-    
-    function closeCategoriesOverlay() {
-        document.getElementById("categoriesOverlay").style.display = 'none';
+        }, 800);
     }
 
-    function showAdPopup(url, time) {
+    function showAdPopup(finalLink, time) {
         const adDiv = document.getElementById("adPopup");
         const iframe = document.getElementById("adIframe");
         const timerEl = document.getElementById("adTimer");
         
-        if(!url || url.length < 5) {
-            url = adLinks[Math.floor(Math.random() * adLinks.length)];
-        }
-
+        const adUrl = adLinks[Math.floor(Math.random() * adLinks.length)];
         adDiv.style.display = 'flex';
-        iframe.src = url;
+        iframe.src = adUrl;
         
-        let timeLeft = time;
+        let timeLeft = time || 10;
         timerEl.innerText = timeLeft;
         
         const interval = setInterval(() => {
@@ -972,11 +683,58 @@
             if(timeLeft <= 0) {
                 clearInterval(interval);
                 adDiv.style.display = 'none';
-                iframe.src = ''; 
+                iframe.src = '';
+                // After ad, open the actual content link
+                if(finalLink && finalLink.length > 5) {
+                    window.open(finalLink, '_blank');
+                }
             }
         }, 1000);
     }
 
+    // Utility Functions
+    function toggleSideMenu() {
+        document.getElementById("sideMenu").classList.toggle("active");
+        document.querySelector(".side-overlay").classList.toggle("active");
+    }
+    function openRequestModal() { document.getElementById("requestModal").style.display = 'flex'; }
+    function submitRequest() {
+        const name = document.getElementById("reqName").value.trim();
+        if(!name) return alert("Enter name");
+        database.ref('requests').push({ type: document.getElementById("reqType").value, name: name, timestamp: Date.now() })
+        .then(() => { alert("Sent!"); document.getElementById("requestModal").style.display='none'; });
+    }
+    function toggleFavorite(key) {
+        let favs = JSON.parse(localStorage.getItem('favs') || '[]');
+        favs = favs.includes(key) ? favs.filter(k => k !== key) : [...favs, key];
+        localStorage.setItem('favs', JSON.stringify(favs));
+        updateFavBtnState(key);
+    }
+    function updateFavBtnState(key) {
+        const isFav = JSON.parse(localStorage.getItem('favs') || '[]').includes(key);
+        const btn = document.getElementById("favoriteBtn");
+        btn.style.background = isFav ? "#4caf50" : "#e91e63";
+        btn.innerText = isFav ? "Saved to Favorites" : "Add to Favorites";
+    }
+    function showCategoriesOverlay() {
+        document.getElementById("categoriesOverlay").style.display = 'flex';
+        database.ref('categories').once('value', snap => {
+            const list = document.getElementById("categoryListOverlay");
+            list.innerHTML = '';
+            snap.forEach(c => {
+                const btn = document.createElement("div");
+                btn.className = "category-btn-item"; btn.innerText = c.val();
+                btn.onclick = () => { handleNavClick(c.val(), null); closeCategoriesOverlay(); };
+                list.appendChild(btn);
+            });
+        });
+    }
+    function closeCategoriesOverlay() { document.getElementById("categoriesOverlay").style.display = 'none'; }
+    function handleNavClick(f, e) {
+        if(e) { document.querySelectorAll('.nav-item-btn').forEach(l=>l.classList.remove('active')); e.classList.add('active'); }
+        setFilter(f); closeDetail();
+    }
 </script>
 </body>
 </html>
+
