@@ -497,46 +497,52 @@
 
     async function loadData() {
     spinner.style.display = 'block';
+    grid.innerHTML = '';
     
-    // Movies کے لیے لائیو لسنر
-    database.ref('movies').on('value', (moviesSnap) => {
-        allContent = [];
-        moviesSnap.forEach(child => {
-            let val = child.val();
-            val.key = child.key;
-            val.type = val.type || (val.episodes ? 'series' : 'movie');
-            if(!val.isPopular) allContent.push(val);
-        });
-        allContent.reverse();
+    // پرانا ڈیٹا صاف کریں تاکہ ڈپلیکیٹ نہ ہو
+    allContent = [];
+    popularContent = [];
+
+    // 1. عام موویز کے لیے لسنر (صرف نئے اضافے پکڑے گا)
+    const moviesRef = database.ref('movies');
+    
+    moviesRef.on('child_added', (snapshot) => {
+        let movie = snapshot.val();
+        movie.key = snapshot.key;
+        movie.type = movie.type || (movie.episodes ? 'series' : 'movie');
         
-        // ڈیٹا اپڈیٹ ہوتے ہی گرڈ کو دوبارہ رینڈر کریں
+        // لسٹ میں شامل کریں اور دوبارہ رینڈر کریں
+        if(!movie.isPopular) {
+            allContent.unshift(movie); // نئی چیز اوپر دکھانے کے لیے unshift
+            refreshDisplay();
+        }
+    });
+
+    // 2. پاپولر موویز کے لیے لسنر
+    const popularRef = database.ref('popular_movies');
+    
+    popularRef.on('child_added', (snapshot) => {
+        let movie = snapshot.val();
+        movie.key = snapshot.key;
+        movie.isPopular = true;
+        movie.type = movie.type || 'movie';
+        
+        popularContent.unshift(movie);
         refreshDisplay();
     });
 
-    // Popular Movies کے لیے لائیو لسنر
-    database.ref('popular_movies').on('value', (popularSnap) => {
-        popularContent = [];
-        popularSnap.forEach(child => {
-            let val = child.val();
-            val.key = child.key;
-            val.isPopular = true;
-            val.type = val.type || 'movie';
-            popularContent.push(val);
-        });
-        popularContent.reverse();
-        
-        // ڈیٹا اپڈیٹ ہوتے ہی گرڈ کو دوبارہ رینڈر کریں
-        refreshDisplay();
+    // ڈیٹا لوڈ ہونے کے بعد سپنر بند کرنے کے لیے
+    moviesRef.once('value', () => {
+        spinner.style.display = 'none';
     });
 }
 
-// ایک نیا مددگار فنکشن تاکہ بار بار فلٹر اپلائی ہو سکے
+// ڈسپلے کو ریفریش کرنے کا فنکشن
 function refreshDisplay() {
+    // موجودہ فلٹر کے مطابق گرڈ اپڈیٹ کریں
     setFilter(currentFilterType);
-    spinner.style.display = 'none';
 }
 
-    }
 
     function handleNavClick(filter, element) {
         if(element) {
