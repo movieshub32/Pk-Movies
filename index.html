@@ -496,37 +496,46 @@
     };
 
     async function loadData() {
-        spinner.style.display = 'block';
-        grid.innerHTML = '';
-        try {
-            const [moviesSnap, popularSnap] = await Promise.all([
-                database.ref('movies').once('value'),
-                database.ref('popular_movies').once('value')
-            ]);
-            allContent = [];
-            moviesSnap.forEach(child => {
-                let val = child.val();
-                val.key = child.key;
-                val.type = val.type || (val.episodes ? 'series' : 'movie');
-                if(!val.isPopular) allContent.push(val);
-            });
-            popularContent = [];
-            popularSnap.forEach(child => {
-                let val = child.val();
-                val.key = child.key;
-                val.isPopular = true;
-                val.type = val.type || 'movie';
-                popularContent.push(val);
-            });
-            allContent.reverse();
-            popularContent.reverse();
-            setFilter('all');
-        } catch (error) {
-            console.error(error);
-            grid.innerHTML = '<p style="text-align:center;width:100%">Error loading content.</p>';
-        } finally {
-            spinner.style.display = 'none';
-        }
+    spinner.style.display = 'block';
+    
+    // Movies کے لیے لائیو لسنر
+    database.ref('movies').on('value', (moviesSnap) => {
+        allContent = [];
+        moviesSnap.forEach(child => {
+            let val = child.val();
+            val.key = child.key;
+            val.type = val.type || (val.episodes ? 'series' : 'movie');
+            if(!val.isPopular) allContent.push(val);
+        });
+        allContent.reverse();
+        
+        // ڈیٹا اپڈیٹ ہوتے ہی گرڈ کو دوبارہ رینڈر کریں
+        refreshDisplay();
+    });
+
+    // Popular Movies کے لیے لائیو لسنر
+    database.ref('popular_movies').on('value', (popularSnap) => {
+        popularContent = [];
+        popularSnap.forEach(child => {
+            let val = child.val();
+            val.key = child.key;
+            val.isPopular = true;
+            val.type = val.type || 'movie';
+            popularContent.push(val);
+        });
+        popularContent.reverse();
+        
+        // ڈیٹا اپڈیٹ ہوتے ہی گرڈ کو دوبارہ رینڈر کریں
+        refreshDisplay();
+    });
+}
+
+// ایک نیا مددگار فنکشن تاکہ بار بار فلٹر اپلائی ہو سکے
+function refreshDisplay() {
+    setFilter(currentFilterType);
+    spinner.style.display = 'none';
+}
+
     }
 
     function handleNavClick(filter, element) {
