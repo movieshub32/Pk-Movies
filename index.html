@@ -238,7 +238,7 @@
         #inModalPlayerContainer {
             width: 100%;
             background: #000;
-            margin-bottom: 5px;
+            margin-bottom: 5px; 
             display: none; 
             position: relative;
         }
@@ -264,7 +264,6 @@
             text-align: center;
         }
         
-        /* Request Form Styles */
         .form-group { margin-bottom: 15px; }
         .form-label { display: block; margin-bottom: 5px; color: #bbb; }
         .form-input, .form-select {
@@ -329,9 +328,18 @@
     <div style="padding: 0 20px 20px 20px;">
         <h2 style="color: #ff8c1a; border-bottom: 1px solid #444; padding-bottom: 10px;">Menu</h2>
     </div>
-    <div class="side-link" onclick="handleNavClick('popular', null); toggleSideMenu()"><i class="fas fa-star" style="color: gold;"></i> Popular Content</div>
-    <div class="side-link" onclick="openRequestModal(); toggleSideMenu()"><i class="fas fa-envelope-open-text" style="color: #00e676;"></i> Request Movie</div>
-    <div class="side-link" onclick="window.location.reload()"><i class="fas fa-sync" style="color: #29b6f6;"></i> Refresh App</div>
+    
+    <div class="side-link" onclick="handleNavClick('popular', null); toggleSideMenu()">
+        <i class="fas fa-star" style="color: gold;"></i> Popular Content
+    </div>
+    
+    <div class="side-link" onclick="openRequestModal(); toggleSideMenu()">
+        <i class="fas fa-envelope-open-text" style="color: #00e676;"></i> Request Movie
+    </div>
+
+    <div class="side-link" onclick="window.location.reload()">
+        <i class="fas fa-sync" style="color: #29b6f6;"></i> Refresh App
+    </div>
 </div>
 
 <div class="header" id="pageHeader">
@@ -381,7 +389,7 @@
         <div id="movieButtons">
             <button id="playBtn" class="btn" style="background: #ff4d4d; color: white;">Play Movie</button>
             <button id="favoriteBtn" class="btn" style="background: #e91e63; color: white;">Add to Favorites</button>
-            <button id="otherDownloadBtn" class="btn" style="background: #009688; color: white; display: none;">Download Movie</button>
+            <button id="otherDownloadBtn" class="btn" style="background: #009688; color: white; display: none;">Alternative Download</button>
         </div>
     </div>
 </div>
@@ -390,6 +398,8 @@
     <div class="modal-box">
         <div class="close-btn-fixed" onclick="document.getElementById('requestModal').style.display='none'">&times;</div>
         <h2 style="color: #00e676; text-align: center;">Request Content</h2>
+        <p style="text-align: center; color: #aaa; font-size: 12px; margin-bottom: 20px;">Let us know what you want to watch!</p>
+        
         <div class="form-group">
             <label class="form-label">Type:</label>
             <select id="reqType" class="form-select">
@@ -397,10 +407,12 @@
                 <option value="Series">Web Series</option>
             </select>
         </div>
+        
         <div class="form-group">
             <label class="form-label">Name:</label>
-            <input type="text" id="reqName" class="form-input" placeholder="e.g. Pathaan...">
+            <input type="text" id="reqName" class="form-input" placeholder="e.g. Pathaan, Money Heist...">
         </div>
+        
         <button class="btn" onclick="submitRequest()" style="background: #00e676; color: #000;">Send Request</button>
     </div>
 </div>
@@ -421,23 +433,32 @@
 </div>
 
 <div id="bottomNav">
-    <div class="nav-item-btn active" onclick="window.location.reload()"><i class="fas fa-home"></i> <span>Home</span></div>
-    <div class="nav-item-btn" onclick="showCategoriesOverlay()"><i class="fas fa-tags"></i> <span>Categories</span></div>
-    <div class="nav-item-btn" onclick="handleNavClick('movie', this)"><i class="fas fa-film"></i> <span>Movies</span></div>
-    <div class="nav-item-btn" onclick="handleNavClick('series', this)"><i class="fas fa-tv"></i> <span>Series</span></div>
-    <div class="nav-item-btn" onclick="handleNavClick('favorites', this)"><i class="fas fa-heart"></i> <span>Favorites</span></div>
+    <div class="nav-item-btn active" onclick="window.location.reload()">
+        <i class="fas fa-home"></i> <span>Home</span>
+    </div>
+    <div class="nav-item-btn" onclick="showCategoriesOverlay()">
+        <i class="fas fa-tags"></i> <span>Categories</span>
+    </div>
+    <div class="nav-item-btn" onclick="handleNavClick('movie', this)">
+        <i class="fas fa-film"></i> <span>Movies</span>
+    </div>
+    <div class="nav-item-btn" onclick="handleNavClick('series', this)">
+        <i class="fas fa-tv"></i> <span>Series</span>
+    </div>
+    <div class="nav-item-btn" onclick="handleNavClick('favorites', this)">
+        <i class="fas fa-heart"></i> <span>Favorites</span>
+    </div>
 </div>
 
 <script>
-    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
-        apiKey: "AIzaSyAzMuU6FOaYUnhFCfwbhOxDbfQiWG_LGQM",
-        authDomain: "pk-movies-a6fbc.firebaseapp.com",
-        databaseURL: "https://pk-movies-a6fbc-default-rtdb.firebaseio.com",
-        projectId: "pk-movies-a6fbc",
-        storageBucket: "pk-movies-a6fbc.firebasestorage.app",
-        messagingSenderId: "887789225438",
-        appId: "1:887789225438:web:db267440fcc5703881494f"
+    apiKey: "AIzaSyAzMuU6FOaYUnhFCfwbhOxDbfQiWG_LGQM",
+    authDomain: "pk-movies-a6fbc.firebaseapp.com",
+    databaseURL: "https://pk-movies-a6fbc-default-rtdb.firebaseio.com",
+    projectId: "pk-movies-a6fbc",
+    storageBucket: "pk-movies-a6fbc.firebasestorage.app",
+    messagingSenderId: "887789225438",
+    appId: "1:887789225438:web:db267440fcc5703881494f"
     };
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
@@ -476,6 +497,7 @@
 
     async function loadData() {
         spinner.style.display = 'block';
+        grid.innerHTML = '';
         try {
             const [moviesSnap, popularSnap] = await Promise.all([
                 database.ref('movies').once('value'),
@@ -500,42 +522,69 @@
             popularContent.reverse();
             setFilter('all');
         } catch (error) {
-            grid.innerHTML = '<p>Error loading content.</p>';
+            console.error(error);
+            grid.innerHTML = '<p style="text-align:center;width:100%">Error loading content.</p>';
         } finally {
             spinner.style.display = 'none';
         }
     }
 
+    function handleNavClick(filter, element) {
+        if(element) {
+            document.querySelectorAll('.nav-item-btn').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+        spinner.style.display = 'block';
+        grid.innerHTML = '';
+        document.getElementById("searchBar").value = '';
+        closeDetail();
+        setTimeout(() => {
+            setFilter(filter);
+            spinner.style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 300);
+    }
+
     function setFilter(filter) {
         currentFilterType = filter;
-        if (filter === 'all') filteredMovies = [...allContent, ...popularContent];
-        else if (filter === 'movie') filteredMovies = allContent.filter(m => m.type === 'movie');
-        else if (filter === 'series') filteredMovies = allContent.filter(m => m.type === 'series');
-        else if (filter === 'popular') filteredMovies = popularContent;
-        else if (filter === 'favorites') {
+        if (filter === 'all') {
+            filteredMovies = [...allContent, ...popularContent];
+        } else if (filter === 'movie') {
+            filteredMovies = allContent.filter(m => m.type === 'movie');
+        } else if (filter === 'series') {
+            filteredMovies = allContent.filter(m => m.type === 'series');
+        } else if (filter === 'popular') {
+            filteredMovies = popularContent;
+        } else if (filter === 'favorites') {
             const favKeys = JSON.parse(localStorage.getItem('favs') || '[]');
             filteredMovies = [...allContent, ...popularContent].filter(m => favKeys.includes(m.key));
-        } else filteredMovies = [...allContent, ...popularContent].filter(m => m.category === filter);
+        } else {
+            filteredMovies = [...allContent, ...popularContent].filter(m => m.category === filter);
+        }
         currentPage = 1;
         renderPage(currentPage);
     }
 
     function renderPage(page) {
         const start = (page - 1) * MOVIES_PER_PAGE;
-        const pageItems = filteredMovies.slice(start, start + MOVIES_PER_PAGE);
+        const end = start + MOVIES_PER_PAGE;
+        const pageItems = filteredMovies.slice(start, end);
         const totalPages = Math.ceil(filteredMovies.length / MOVIES_PER_PAGE);
         if (pageItems.length === 0) {
-            grid.innerHTML = `<p style="text-align: center; grid-column: 1/-1;">No content found.</p>`;
+            grid.innerHTML = `<p style="text-align: center; grid-column: 1/-1; padding: 20px;">No content found.</p>`;
             paginationControls.style.display = 'none';
             return;
         }
-        grid.innerHTML = pageItems.map(movie => `
-            <div class="movie-card" onclick="openDetail('${movie.key}')">
-                <img src="${movie.img}" loading="lazy" alt="${movie.title}">
-                <p>${movie.title}</p>
-                <span class="category-badge">${movie.category} | ${movie.isPopular ? 'Popular' : (movie.type === 'series' ? 'Series' : 'Movie')}</span>
-            </div>
-        `).join('');
+        let htmlBuffer = '';
+        pageItems.forEach(movie => {
+            const tag = movie.isPopular ? 'Popular' : (movie.type === 'series' ? 'Series' : 'Movie');
+            htmlBuffer += `<div class="movie-card" onclick="openDetail('${movie.key}')">
+                    <img src="${movie.img}" loading="lazy" alt="${movie.title}">
+                    <p>${movie.title}</p>
+                    <span class="category-badge">${movie.category} | ${tag}</span>
+                </div>`;
+        });
+        grid.innerHTML = htmlBuffer; 
         paginationControls.style.display = totalPages > 1 ? 'flex' : 'none';
         document.getElementById("prevBtn").disabled = page === 1;
         document.getElementById("nextBtn").disabled = page >= totalPages;
@@ -547,16 +596,22 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    let searchTimeout;
     function debounceFilter() {
-        const q = document.getElementById("searchBar").value.toUpperCase();
-        if(!q) return setFilter('all');
-        filteredMovies = [...allContent, ...popularContent].filter(m => m.title.toUpperCase().includes(q));
-        renderPage(1);
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const q = document.getElementById("searchBar").value.toUpperCase();
+            if(!q) return setFilter('all');
+            filteredMovies = [...allContent, ...popularContent].filter(m => m.title.toUpperCase().includes(q));
+            currentPage = 1;
+            renderPage(1);
+        }, 500);
     }
 
     function openDetail(key) {
         const movie = [...allContent, ...popularContent].find(m => m.key === key);
         if(!movie) return;
+
         currentDetailData = movie;
         currentDetailMovieKey = key;
 
@@ -570,32 +625,32 @@
         const playBtn = document.getElementById("playBtn");
         const otherBtn = document.getElementById("otherDownloadBtn");
         const seriesContainer = document.getElementById("seriesEpisodeContainer");
+        const favBtn = document.getElementById("favoriteBtn");
 
         playerContainer.style.display = 'none';
         videoPlayer.pause();
         videoPlayer.src = '';
-        
-        updateFavBtnState(key);
-        document.getElementById("favoriteBtn").onclick = () => toggleFavorite(key);
+        document.getElementById("playbackInfo").style.display = 'none';
 
-        // Combined Download logic for Alternative Download Button
-        if(movie.otherDownloadLink && movie.otherDownloadLink.length > 5) {
-            otherBtn.style.display = 'block';
-            otherBtn.innerText = "Download Movie";
-            // Show ad first, then open the link
-            otherBtn.onclick = () => showAdPopup(movie.otherDownloadLink, 15);
-        } else {
-            otherBtn.style.display = 'none';
-        }
+        updateFavBtnState(key);
+        favBtn.onclick = () => toggleFavorite(key);
+
+        // Always show Alternative Download button and use it as the main download/extra link
+        // It will now trigger an ad and then the play link
+        otherBtn.style.display = 'block';
+        otherBtn.innerText = "Alternative Download";
+        otherBtn.onclick = () => showAdPopup(null, 15, movie.play); // Calls ad then opens play link
 
         if(movie.type === 'series') {
             playBtn.style.display = 'none';
             seriesContainer.style.display = 'block';
             const seasonSelect = document.getElementById("seasonSelect");
             seasonSelect.innerHTML = '';
-            for(let i=1; i<=(movie.seasons || 1); i++) {
+            const count = movie.seasons || 1;
+            for(let i=1; i<=count; i++) {
                 const opt = document.createElement("option");
-                opt.value = `S${i}`; opt.innerText = `Season ${i}`;
+                opt.value = `S${i}`;
+                opt.innerText = `Season ${i}`;
                 seasonSelect.appendChild(opt);
             }
             displaySeasonEpisodes('S1');
@@ -608,73 +663,148 @@
     }
 
     function closeDetail() {
-        if (currentPlaybackID && !videoPlayer.paused) {
+        const modal = document.getElementById("modal");
+        if (currentPlaybackID && !videoPlayer.ended && videoPlayer.currentTime > 0) {
             localStorage.setItem(`playback_${currentPlaybackID}`, videoPlayer.currentTime.toString());
         }
         videoPlayer.pause();
         videoPlayer.src = '';
-        document.getElementById("modal").style.display = "none";
+        document.getElementById("inModalPlayerContainer").style.display = 'none';
         currentPlaybackID = null;
+        modal.style.display = "none";
     }
 
-    function playVideo(url, playbackID, title, season = '', epTitle = '') {
-        if(!url) return alert("Link not available");
+    function playVideo(url, playbackID, seriesTitle = 'Movie', season = '', episodeTitle = '') {
+        if(!url) return alert("Link is not available");
+        const container = document.getElementById("inModalPlayerContainer");
+        const infoDiv = document.getElementById("playbackInfo");
+        videoPlayer.pause();
         videoPlayer.src = url;
-        currentPlaybackID = playbackID;
-        document.getElementById("inModalPlayerContainer").style.display = 'block';
-        
-        const info = document.getElementById("playbackInfo");
-        info.innerText = season ? `S${season.slice(1)} - ${epTitle}` : title;
-        info.style.display = 'block';
-
-        videoPlayer.onloadedmetadata = () => {
-            const saved = localStorage.getItem(`playback_${playbackID}`);
-            if(saved) videoPlayer.currentTime = Math.max(0, parseFloat(saved) - 10);
-            videoPlayer.play();
-        };
+        currentPlaybackID = playbackID; 
+        container.style.display = 'block';
+        if (seriesTitle !== 'Movie' && season && episodeTitle) {
+            infoDiv.innerText = `Season ${season.slice(1)} - Episode ${episodeTitle}`;
+            infoDiv.style.display = 'block';
+        } else {
+            infoDiv.innerText = seriesTitle;
+            infoDiv.style.display = 'block';
+        }
+        videoPlayer.addEventListener('loadedmetadata', function handleLoad() {
+            videoPlayer.removeEventListener('loadedmetadata', handleLoad);
+            const savedTime = localStorage.getItem(`playback_${currentPlaybackID}`);
+            if (savedTime && savedTime > 0) {
+                videoPlayer.currentTime = Math.max(0, parseFloat(savedTime) - 10);
+            }
+            videoPlayer.play().catch(e => console.log("Manual play required"));
+        });
+        videoPlayer.load();
         document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function setupVideoEvents() {
-        videoPlayer.ontimeupdate = () => {
-            if (currentPlaybackID && videoPlayer.currentTime > 5) {
-                localStorage.setItem(`playback_${currentPlaybackID}`, videoPlayer.currentTime.toString());
-            }
+        let saveTimeout;
+        videoPlayer.ontimeupdate = function() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                if (currentPlaybackID && !videoPlayer.paused && !videoPlayer.ended && videoPlayer.currentTime > 5) {
+                    localStorage.setItem(`playback_${currentPlaybackID}`, videoPlayer.currentTime.toString());
+                }
+            }, 2000);
+        };
+        videoPlayer.onpause = () => {
+            if (currentPlaybackID && !videoPlayer.ended) localStorage.setItem(`playback_${currentPlaybackID}`, videoPlayer.currentTime.toString());
+        };
+        videoPlayer.onended = () => {
+            if (currentPlaybackID) localStorage.removeItem(`playback_${currentPlaybackID}`);
         };
     }
 
     function displaySeasonEpisodes(season) {
         const list = document.getElementById("episodeList");
-        list.innerHTML = '<div class="spinner" style="width:20px;height:20px;"></div>';
+        list.innerHTML = `<div style="text-align: center; padding: 20px;"><div class="spinner" style="width:30px;height:30px;border-width:3px;"></div></div>`;
         setTimeout(() => {
-            list.innerHTML = '';
-            const eps = currentDetailData.episodes?.[season];
-            if(!eps) { list.innerHTML = 'No episodes.'; return; }
-            Object.keys(eps).sort((a,b)=>parseInt(a.slice(3))-parseInt(b.slice(3))).forEach(k => {
-                const ep = eps[k];
-                const pID = `${currentDetailMovieKey}_${season}_${k}`;
-                list.innerHTML += `
-                    <div class="episode-item">
-                        <span>${ep.title}</span>
-                        <div class="ep-actions">
-                            <button class="ep-play" onclick="playVideo('${ep.link}', '${pID}', '', '${season}', '${ep.title}')">Play</button>
-                            <button class="ep-down" onclick="showAdPopup('${ep.download || ''}', 15)">Download</button>
-                        </div>
-                    </div>`;
+            list.innerHTML = ''; 
+            if(!currentDetailData.episodes || !currentDetailData.episodes[season]) {
+                list.innerHTML = '<p style="color:#888; text-align:center;">No episodes added yet.</p>';
+                return;
+            }
+            const eps = currentDetailData.episodes[season];
+            const seriesTitle = currentDetailData.title.replace(/'/g, "\\'");
+            Object.keys(eps).sort((a,b) => parseInt(a.slice(3)) - parseInt(b.slice(3))).forEach(key => {
+                const ep = eps[key];
+                const playbackID = `${currentDetailMovieKey}_${season}_${key}`;
+                list.innerHTML += `<div class="episode-item">
+                    <span>${ep.title}</span>
+                    <div class="ep-actions">
+                        <button class="ep-play" onclick="playVideo('${ep.link}', '${playbackID}', '${seriesTitle}', '${season}', '${ep.title.replace(/'/g, "\\'")}')">Play</button>
+                        <button class="ep-down" onclick="showAdPopup(null, 15, '${ep.link}')">Download</button> 
+                    </div>
+                </div>`;
             });
-        }, 800);
+        }, 1200);
     }
 
-    function showAdPopup(finalLink, time) {
+    function toggleSideMenu() {
+        document.getElementById("sideMenu").classList.toggle("active");
+        document.querySelector(".side-overlay").classList.toggle("active");
+    }
+
+    function openRequestModal() { document.getElementById("requestModal").style.display = 'flex'; }
+
+    function submitRequest() {
+        const type = document.getElementById("reqType").value;
+        const name = document.getElementById("reqName").value.trim();
+        if(!name) return alert("Please enter a name");
+        database.ref('requests').push({ type, name, timestamp: Date.now() }).then(() => {
+            alert("Request sent!");
+            document.getElementById("requestModal").style.display = 'none';
+        });
+    }
+
+    function toggleFavorite(key) {
+        let favs = JSON.parse(localStorage.getItem('favs') || '[]');
+        favs = favs.includes(key) ? favs.filter(k => k !== key) : [...favs, key];
+        localStorage.setItem('favs', JSON.stringify(favs));
+        updateFavBtnState(key);
+    }
+
+    function updateFavBtnState(key) {
+        const favs = JSON.parse(localStorage.getItem('favs') || '[]');
+        const btn = document.getElementById("favoriteBtn");
+        btn.innerText = favs.includes(key) ? "Saved to Favorites" : "Add to Favorites";
+        btn.style.background = favs.includes(key) ? "#4caf50" : "#e91e63";
+    }
+
+    function showCategoriesOverlay() {
+        document.getElementById("categoriesOverlay").style.display = 'flex';
+        const list = document.getElementById("categoryListOverlay");
+        database.ref('categories').once('value', snap => {
+            list.innerHTML = '';
+            snap.forEach(c => {
+                const div = document.createElement("div");
+                div.className = "category-btn-item";
+                div.innerText = c.val();
+                div.onclick = () => { handleNavClick(c.val(), null); closeCategoriesOverlay(); };
+                list.appendChild(div);
+            });
+        });
+    }
+    
+    function closeCategoriesOverlay() { document.getElementById("categoriesOverlay").style.display = 'none'; }
+
+    // Enhanced Ad Popup to handle Redirect After Timer
+    function showAdPopup(url, time, redirectUrl = null) {
         const adDiv = document.getElementById("adPopup");
         const iframe = document.getElementById("adIframe");
         const timerEl = document.getElementById("adTimer");
         
-        const adUrl = adLinks[Math.floor(Math.random() * adLinks.length)];
+        // If no ad URL is provided, pick a random one
+        let finalAdUrl = (url && url.length > 5) ? url : adLinks[Math.floor(Math.random() * adLinks.length)];
+
         adDiv.style.display = 'flex';
-        iframe.src = adUrl;
+        iframe.src = finalAdUrl;
         
-        let timeLeft = time || 10;
+        let timeLeft = time;
         timerEl.innerText = timeLeft;
         
         const interval = setInterval(() => {
@@ -683,57 +813,16 @@
             if(timeLeft <= 0) {
                 clearInterval(interval);
                 adDiv.style.display = 'none';
-                iframe.src = '';
-                // After ad, open the actual content link
-                if(finalLink && finalLink.length > 5) {
-                    window.open(finalLink, '_blank');
+                iframe.src = ''; 
+                
+                // Final Action: If redirectUrl exists (The Movie Play Link), open it
+                if(redirectUrl) {
+                    window.open(redirectUrl, '_blank');
                 }
             }
         }, 1000);
     }
 
-    // Utility Functions
-    function toggleSideMenu() {
-        document.getElementById("sideMenu").classList.toggle("active");
-        document.querySelector(".side-overlay").classList.toggle("active");
-    }
-    function openRequestModal() { document.getElementById("requestModal").style.display = 'flex'; }
-    function submitRequest() {
-        const name = document.getElementById("reqName").value.trim();
-        if(!name) return alert("Enter name");
-        database.ref('requests').push({ type: document.getElementById("reqType").value, name: name, timestamp: Date.now() })
-        .then(() => { alert("Sent!"); document.getElementById("requestModal").style.display='none'; });
-    }
-    function toggleFavorite(key) {
-        let favs = JSON.parse(localStorage.getItem('favs') || '[]');
-        favs = favs.includes(key) ? favs.filter(k => k !== key) : [...favs, key];
-        localStorage.setItem('favs', JSON.stringify(favs));
-        updateFavBtnState(key);
-    }
-    function updateFavBtnState(key) {
-        const isFav = JSON.parse(localStorage.getItem('favs') || '[]').includes(key);
-        const btn = document.getElementById("favoriteBtn");
-        btn.style.background = isFav ? "#4caf50" : "#e91e63";
-        btn.innerText = isFav ? "Saved to Favorites" : "Add to Favorites";
-    }
-    function showCategoriesOverlay() {
-        document.getElementById("categoriesOverlay").style.display = 'flex';
-        database.ref('categories').once('value', snap => {
-            const list = document.getElementById("categoryListOverlay");
-            list.innerHTML = '';
-            snap.forEach(c => {
-                const btn = document.createElement("div");
-                btn.className = "category-btn-item"; btn.innerText = c.val();
-                btn.onclick = () => { handleNavClick(c.val(), null); closeCategoriesOverlay(); };
-                list.appendChild(btn);
-            });
-        });
-    }
-    function closeCategoriesOverlay() { document.getElementById("categoriesOverlay").style.display = 'none'; }
-    function handleNavClick(f, e) {
-        if(e) { document.querySelectorAll('.nav-item-btn').forEach(l=>l.classList.remove('active')); e.classList.add('active'); }
-        setFilter(f); closeDetail();
-    }
 </script>
 </body>
 </html>
