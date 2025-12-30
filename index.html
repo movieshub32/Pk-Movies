@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -367,7 +368,7 @@
         <div class="close-btn-fixed" onclick="closeDetail()">&times;</div>
         
         <div id="inModalPlayerContainer">
-            <video id="inModalVideoPlayer" controls controlsList="" playsinline preload="metadata">
+            <video id="inModalVideoPlayer" controls controlsList="dawnload" playsinline preload="metadata">
                 <source id="inModalVideoSource" src="">
             </video>
         </div>
@@ -480,14 +481,24 @@
     let currentPlaybackID = null; 
 
     const adLinks = [
-        "https://www.effectivegatecpm.com/yz4z5szmf?key=73186bcddd33133e4b3c585292f10bde",
-        "https://www.effectivegatecpm.com/s2mq62in?key=b17a7185381af8ce5baa404d8817d708",
-        "https://www.effectivegatecpm.com/dqm7ya0myx?key=976aa4962ea641f87639dfc784b35969",
-        "https://www.effectivegatecpm.com/b7gn1rctv?key=a6df49ee2755a88078fad4af6ebd06bf",
-        "https://www.effectivegatecpm.com/cm2npj3b6n?key=bbdca23bff7d7d54853f830d7c238ddf",
-        "https://www.effectivegatecpm.com/uyz2avfp?key=af05da8c47fc0d441624224a14c722a6",
-        "https://www.effectivegatecpm.com/uz50mzu3f?key=efec633d14ae4a27a4a0aa1aa41c9c7e"
-    ]; 
+      "https://www.effectivegatecpm.com/etnvcsg5?key=8cdf22590b8d8a5148ae31d2551bbe25",
+      "https://www.effectivegatecpm.com/fgjvc6xp?key=02a55463acca337410ce3bf28d4c13fa",
+      "https://www.effectivegatecpm.com/f8hs51b5gu?key=42e509c5950072bbed4338d8ed26f2a2",
+      "https://www.effectivegatecpm.com/ynw0tz2k3x?key=d610eba80f701ad43ddbbefa958a170b",
+      "https://www.effectivegatecpm.com/qnz1bz88?key=3f638331d7435231f9cdd95f1bba2bfe",
+      "https://www.effectivegatecpm.com/apty94t6xs?key=63579541649996bfcd7e7bb10053c8ea",
+      "https://www.effectivegatecpm.com/uck9x0wk6?key=11fca88e86f0d00b67543ac7a783e47f",
+      "https://www.effectivegatecpm.com/zq5rzngg?key=a6fd58330a330c83ef94c1f7b6534856",
+      "https://www.effectivegatecpm.com/ht895npk?key=1dfeb60a3b20c38bc592436e3ccf9a82",
+      "https://www.effectivegatecpm.com/dqm7ya0myx?key=976aa4962ea641f87639dfc784b35969",
+      "https://www.effectivegatecpm.com/b7gn1rctv?key=a6df49ee2755a88078fad4af6ebd06bf",
+      "https://www.effectivegatecpm.com/yz4z5szmf?key=73186bcddd33133e4b3c585292f10bde",
+      "https://www.effectivegatecpm.com/s2mq62in?key=b17a7185381af8ce5baa404d8817d708",
+      "https://www.effectivegatecpm.com/cm2npj3b6n?key=bbdca23bff7d7d54853f830d7c238ddf",
+      "https://www.effectivegatecpm.com/uz50mzu3f?key=efec633d14ae4a27a4a0aa1aa41c9c7e",
+      "https://www.effectivegatecpm.com/trsd2yif?key=abc53a0d90802a614242e97af96fd662",
+      "https://www.effectivegatecpm.com/uyz2avfp?key=af05da8c47fc0d441624224a14c722a6"
+      ]; 
 
     window.onload = function() {
         loadData();
@@ -497,52 +508,45 @@
 
     async function loadData() {
     spinner.style.display = 'block';
-    grid.innerHTML = '';
     
-    // پرانا ڈیٹا صاف کریں تاکہ ڈپلیکیٹ نہ ہو
+    // Movies کے لیے لائیو لسنر
+    database.ref('movies').on('value', (moviesSnap) => {
     allContent = [];
+    moviesSnap.forEach(child => {
+    let val = child.val();
+    val.key = child.key;
+    val.type = val.type || (val.episodes ? 'series' : 'movie');
+    if(!val.isPopular) allContent.push(val);
+    });
+    allContent.reverse();
+    
+    // ڈیٹا اپڈیٹ ہوتے ہی گرڈ کو دوبارہ رینڈر کریں
+    refreshDisplay();
+    });
+    
+    // Popular Movies کے لیے لائیو لسنر
+    database.ref('popular_movies').on('value', (popularSnap) => {
     popularContent = [];
-
-    // 1. عام موویز کے لیے لسنر (صرف نئے اضافے پکڑے گا)
-    const moviesRef = database.ref('movies');
+    popularSnap.forEach(child => {
+    let val = child.val();
+    val.key = child.key;
+    val.isPopular = true;
+    val.type = val.type || 'movie';
+    popularContent.push(val);
+    });
+    popularContent.reverse();
     
-    moviesRef.on('child_added', (snapshot) => {
-        let movie = snapshot.val();
-        movie.key = snapshot.key;
-        movie.type = movie.type || (movie.episodes ? 'series' : 'movie');
-        
-        // لسٹ میں شامل کریں اور دوبارہ رینڈر کریں
-        if(!movie.isPopular) {
-            allContent.unshift(movie); // نئی چیز اوپر دکھانے کے لیے unshift
-            refreshDisplay();
-        }
+    // ڈیٹا اپڈیٹ ہوتے ہی گرڈ کو دوبارہ رینڈر کریں
+    refreshDisplay();
     });
-
-    // 2. پاپولر موویز کے لیے لسنر
-    const popularRef = database.ref('popular_movies');
+    }
     
-    popularRef.on('child_added', (snapshot) => {
-        let movie = snapshot.val();
-        movie.key = snapshot.key;
-        movie.isPopular = true;
-        movie.type = movie.type || 'movie';
-        
-        popularContent.unshift(movie);
-        refreshDisplay();
-    });
-
-    // ڈیٹا لوڈ ہونے کے بعد سپنر بند کرنے کے لیے
-    moviesRef.once('value', () => {
-        spinner.style.display = 'none';
-    });
-}
-
-// ڈسپلے کو ریفریش کرنے کا فنکشن
-function refreshDisplay() {
-    // موجودہ فلٹر کے مطابق گرڈ اپڈیٹ کریں
+    // ایک نیا مددگار فنکشن تاکہ بار بار فلٹر اپلائی ہو سکے
+    function refreshDisplay() {
     setFilter(currentFilterType);
-}
-
+    spinner.style.display = 'none';
+    }
+    
 
     function handleNavClick(filter, element) {
         if(element) {
@@ -841,4 +845,3 @@ function refreshDisplay() {
 </script>
 </body>
 </html>
-
