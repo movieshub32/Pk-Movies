@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -242,11 +241,18 @@
             margin-bottom: 5px; 
             display: none; 
             position: relative;
+            padding: 30px 0;
+            background: #000;
         }
-        #inModalPlayerContainer video {
+        #inModalVideoPlayer {
             width: 100%;
             height: auto;
             max-height: 350px; 
+        }
+        #drivePlayer {
+            width: 100%;
+            height: 350px;
+            border: none;
         }
         
         .detail-content img { width: 100%; border-radius: 8px; margin-bottom: 10px; }
@@ -368,9 +374,10 @@
         <div class="close-btn-fixed" onclick="closeDetail()">&times;</div>
         
         <div id="inModalPlayerContainer">
-            <video id="inModalVideoPlayer" controls controlsList="dawnload" playsinline preload="metadata">
+            <video id="inModalVideoPlayer" controls controlsList="nodownload" playsinline preload="metadata">
                 <source id="inModalVideoSource" src="">
             </video>
+            <iframe id="drivePlayer" src="" style="display:none;" allow="autoplay"></iframe>
         </div>
         
         <div id="playbackInfo" style="color: #00bcd4; font-size: 14px; text-align: center; margin-bottom: 15px; font-weight: bold; display: none;"></div>
@@ -467,7 +474,8 @@
     const grid = document.getElementById("movieGrid");
     const spinner = document.getElementById("loadingSpinner");
     const paginationControls = document.querySelector('.pagination-controls');
-    const videoPlayer = document.getElementById("inModalVideoPlayer"); 
+    const videoPlayer = document.getElementById("inModalVideoPlayer");
+    const drivePlayer = document.getElementById("drivePlayer");
     
     let allContent = [];
     let popularContent = [];
@@ -507,46 +515,38 @@
     };
 
     async function loadData() {
-    spinner.style.display = 'block';
-    
-    // Movies کے لیے لائیو لسنر
-    database.ref('movies').on('value', (moviesSnap) => {
-    allContent = [];
-    moviesSnap.forEach(child => {
-    let val = child.val();
-    val.key = child.key;
-    val.type = val.type || (val.episodes ? 'series' : 'movie');
-    if(!val.isPopular) allContent.push(val);
-    });
-    allContent.reverse();
-    
-    // ڈیٹا اپڈیٹ ہوتے ہی گرڈ کو دوبارہ رینڈر کریں
-    refreshDisplay();
-    });
-    
-    // Popular Movies کے لیے لائیو لسنر
-    database.ref('popular_movies').on('value', (popularSnap) => {
-    popularContent = [];
-    popularSnap.forEach(child => {
-    let val = child.val();
-    val.key = child.key;
-    val.isPopular = true;
-    val.type = val.type || 'movie';
-    popularContent.push(val);
-    });
-    popularContent.reverse();
-    
-    // ڈیٹا اپڈیٹ ہوتے ہی گرڈ کو دوبارہ رینڈر کریں
-    refreshDisplay();
-    });
+        spinner.style.display = 'block';
+        
+        database.ref('movies').on('value', (moviesSnap) => {
+            allContent = [];
+            moviesSnap.forEach(child => {
+                let val = child.val();
+                val.key = child.key;
+                val.type = val.type || (val.episodes ? 'series' : 'movie');
+                if(!val.isPopular) allContent.push(val);
+            });
+            allContent.reverse();
+            refreshDisplay();
+        });
+        
+        database.ref('popular_movies').on('value', (popularSnap) => {
+            popularContent = [];
+            popularSnap.forEach(child => {
+                let val = child.val();
+                val.key = child.key;
+                val.isPopular = true;
+                val.type = val.type || 'movie';
+                popularContent.push(val);
+            });
+            popularContent.reverse();
+            refreshDisplay();
+        });
     }
     
-    // ایک نیا مددگار فنکشن تاکہ بار بار فلٹر اپلائی ہو سکے
     function refreshDisplay() {
-    setFilter(currentFilterType);
-    spinner.style.display = 'none';
+        setFilter(currentFilterType);
+        spinner.style.display = 'none';
     }
-    
 
     function handleNavClick(filter, element) {
         if(element) {
@@ -649,16 +649,17 @@
         playerContainer.style.display = 'none';
         videoPlayer.pause();
         videoPlayer.src = '';
+        drivePlayer.src = '';
+        videoPlayer.style.display = 'none';
+        drivePlayer.style.display = 'none';
         document.getElementById("playbackInfo").style.display = 'none';
 
         updateFavBtnState(key);
         favBtn.onclick = () => toggleFavorite(key);
 
-        // Always show Alternative Download button and use it as the main download/extra link
-        // It will now trigger an ad and then the play link
         otherBtn.style.display = 'block';
         otherBtn.innerText = "Alternative Download";
-        otherBtn.onclick = () => showAdPopup(null, 15, movie.play); // Calls ad then opens play link
+        otherBtn.onclick = () => showAdPopup(null, 15, movie.play);
 
         if(movie.type === 'series') {
             playBtn.style.display = 'none';
@@ -688,6 +689,7 @@
         }
         videoPlayer.pause();
         videoPlayer.src = '';
+        drivePlayer.src = '';
         document.getElementById("inModalPlayerContainer").style.display = 'none';
         currentPlaybackID = null;
         modal.style.display = "none";
@@ -697,26 +699,42 @@
         if(!url) return alert("Link is not available");
         const container = document.getElementById("inModalPlayerContainer");
         const infoDiv = document.getElementById("playbackInfo");
-        videoPlayer.pause();
-        videoPlayer.src = url;
-        currentPlaybackID = playbackID; 
+        
         container.style.display = 'block';
+        currentPlaybackID = playbackID; 
+
+        // Smart Link Detection
+        if (url.includes('drive.google.com')) {
+            // Google Drive Logic
+            let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview');
+            videoPlayer.pause();
+            videoPlayer.style.display = 'none';
+            drivePlayer.src = embedUrl;
+            drivePlayer.style.display = 'block';
+        } else {
+            // Normal Direct Link Logic
+            drivePlayer.style.display = 'none';
+            drivePlayer.src = '';
+            videoPlayer.style.display = 'block';
+            videoPlayer.src = url;
+            
+            videoPlayer.addEventListener('loadedmetadata', function handleLoad() {
+                videoPlayer.removeEventListener('loadedmetadata', handleLoad);
+                const savedTime = localStorage.getItem(`playback_${currentPlaybackID}`);
+                if (savedTime && savedTime > 0) {
+                    videoPlayer.currentTime = Math.max(0, parseFloat(savedTime) - 10);
+                }
+                videoPlayer.play().catch(e => console.log("Manual play required"));
+            });
+            videoPlayer.load();
+        }
+
         if (seriesTitle !== 'Movie' && season && episodeTitle) {
             infoDiv.innerText = `Season ${season.slice(1)} - Episode ${episodeTitle}`;
-            infoDiv.style.display = 'block';
         } else {
             infoDiv.innerText = seriesTitle;
-            infoDiv.style.display = 'block';
         }
-        videoPlayer.addEventListener('loadedmetadata', function handleLoad() {
-            videoPlayer.removeEventListener('loadedmetadata', handleLoad);
-            const savedTime = localStorage.getItem(`playback_${currentPlaybackID}`);
-            if (savedTime && savedTime > 0) {
-                videoPlayer.currentTime = Math.max(0, parseFloat(savedTime) - 10);
-            }
-            videoPlayer.play().catch(e => console.log("Manual play required"));
-        });
-        videoPlayer.load();
+        infoDiv.style.display = 'block';
         document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -811,13 +829,11 @@
     
     function closeCategoriesOverlay() { document.getElementById("categoriesOverlay").style.display = 'none'; }
 
-    // Enhanced Ad Popup to handle Redirect After Timer
     function showAdPopup(url, time, redirectUrl = null) {
         const adDiv = document.getElementById("adPopup");
         const iframe = document.getElementById("adIframe");
         const timerEl = document.getElementById("adTimer");
         
-        // If no ad URL is provided, pick a random one
         let finalAdUrl = (url && url.length > 5) ? url : adLinks[Math.floor(Math.random() * adLinks.length)];
 
         adDiv.style.display = 'flex';
@@ -833,8 +849,6 @@
                 clearInterval(interval);
                 adDiv.style.display = 'none';
                 iframe.src = ''; 
-                
-                // Final Action: If redirectUrl exists (The Movie Play Link), open it
                 if(redirectUrl) {
                     window.open(redirectUrl, '_blank');
                 }
@@ -845,3 +859,4 @@
 </script>
 </body>
 </html>
+
