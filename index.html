@@ -244,6 +244,18 @@
             padding: 30px 0;
             background: #000;
         }
+        /* جب گوگل ڈرائیو چل رہا ہو تو پیڈنگ ختم کرنے کے لیے */
+        #inModalPlayerContainer.drive-mode {
+        padding: 0 !important;
+        }
+        
+        #drivePlayer {
+        width: 100%;
+        height: 350px; /* آپ اسے ضرورت کے مطابق ایڈجسٹ کر سکتے ہیں */
+        border: none;
+        display: block;
+        }
+        
         #inModalVideoPlayer {
             width: 100%;
             height: auto;
@@ -696,47 +708,52 @@
     }
 
     function playVideo(url, playbackID, seriesTitle = 'Movie', season = '', episodeTitle = '') {
-        if(!url) return alert("Link is not available");
-        const container = document.getElementById("inModalPlayerContainer");
-        const infoDiv = document.getElementById("playbackInfo");
-        
-        container.style.display = 'block';
-        currentPlaybackID = playbackID; 
-
-        // Smart Link Detection
-        if (url.includes('drive.google.com')) {
-            // Google Drive Logic
-            let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview');
-            videoPlayer.pause();
-            videoPlayer.style.display = 'none';
-            drivePlayer.src = embedUrl;
-            drivePlayer.style.display = 'block';
-        } else {
-            // Normal Direct Link Logic
-            drivePlayer.style.display = 'none';
-            drivePlayer.src = '';
-            videoPlayer.style.display = 'block';
-            videoPlayer.src = url;
-            
-            videoPlayer.addEventListener('loadedmetadata', function handleLoad() {
-                videoPlayer.removeEventListener('loadedmetadata', handleLoad);
-                const savedTime = localStorage.getItem(`playback_${currentPlaybackID}`);
-                if (savedTime && savedTime > 0) {
-                    videoPlayer.currentTime = Math.max(0, parseFloat(savedTime) - 10);
-                }
-                videoPlayer.play().catch(e => console.log("Manual play required"));
-            });
-            videoPlayer.load();
-        }
-
-        if (seriesTitle !== 'Movie' && season && episodeTitle) {
-            infoDiv.innerText = `Season ${season.slice(1)} - Episode ${episodeTitle}`;
-        } else {
-            infoDiv.innerText = seriesTitle;
-        }
-        infoDiv.style.display = 'block';
-        document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
+    if(!url) return alert("Link is not available");
+    const container = document.getElementById("inModalPlayerContainer");
+    const infoDiv = document.getElementById("playbackInfo");
+    
+    container.style.display = 'block';
+    currentPlaybackID = playbackID; 
+    
+    // Smart Link Detection
+    if (url.includes('drive.google.com')) {
+    // گوگل ڈرائیو کے لیے: پیڈنگ ختم کر دیں
+    container.classList.add('drive-mode');
+    
+    let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview');
+    videoPlayer.pause();
+    videoPlayer.style.display = 'none';
+    drivePlayer.src = embedUrl;
+    drivePlayer.style.display = 'block';
+    } else {
+    // عام ویڈیو کے لیے: پیڈنگ واپس لگا دیں
+    container.classList.remove('drive-mode');
+    
+    drivePlayer.style.display = 'none';
+    drivePlayer.src = '';
+    videoPlayer.style.display = 'block';
+    videoPlayer.src = url;
+    
+    videoPlayer.addEventListener('loadedmetadata', function handleLoad() {
+    videoPlayer.removeEventListener('loadedmetadata', handleLoad);
+    const savedTime = localStorage.getItem(`playback_${currentPlaybackID}`);
+    if (savedTime && savedTime > 0) {
+    videoPlayer.currentTime = Math.max(0, parseFloat(savedTime) - 10);
     }
+    videoPlayer.play().catch(e => console.log("Manual play required"));
+    });
+    videoPlayer.load();
+    }
+    
+    if (seriesTitle !== 'Movie' && season && episodeTitle) {
+    infoDiv.innerText = `Season ${season.slice(1)} - Episode ${episodeTitle}`;
+    } else {
+    infoDiv.innerText = seriesTitle;
+    }
+    infoDiv.style.display = 'block';
+    document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
 
     function setupVideoEvents() {
         let saveTimeout;
@@ -859,4 +876,3 @@
 </script>
 </body>
 </html>
-
