@@ -245,11 +245,11 @@
             background: #000;
         }
         
-        #inModalPlayerContainer.drive-mode {
+        #inModalPlayerContainer.drive-mode, #inModalPlayerContainer.embed-mode {
             padding: 0 !important;
         }
         
-        #drivePlayer {
+        #drivePlayer, #embedPlayer {
             width: 100%;
             height: 250px; 
             border: none;
@@ -385,6 +385,7 @@
                 <source id="inModalVideoSource" src="">
             </video>
             <iframe id="drivePlayer" src="" style="display:none;" allow="autoplay; fullscreen" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+            <iframe id="embedPlayer" src="" style="display:none;" scrolling="no" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
             
             <button id="driveDownloadBtn" class="btn" style="background: #2196F3; color: white; display: none; margin-top: 5px; font-size: 12px; padding: 8px;">
                 <i class="fas fa-download"></i> Full Watch & Dawnload
@@ -487,6 +488,7 @@
     const paginationControls = document.querySelector('.pagination-controls');
     const videoPlayer = document.getElementById("inModalVideoPlayer");
     const drivePlayer = document.getElementById("drivePlayer");
+    const embedPlayer = document.getElementById("embedPlayer");
     const driveDownloadBtn = document.getElementById("driveDownloadBtn");
     
     let allContent = [];
@@ -523,7 +525,7 @@
     window.onload = function() {
         loadData();
         setupVideoEvents(); 
-        setTimeout(() => { showAdPopup(null, 0); }, 10000); 
+        setTimeout(() => { showAdPopup(null, 7); }, 5000); 
     };
 
     async function loadData() {
@@ -662,8 +664,10 @@
         videoPlayer.pause();
         videoPlayer.src = '';
         drivePlayer.src = '';
+        embedPlayer.src = '';
         videoPlayer.style.display = 'none';
         drivePlayer.style.display = 'none';
+        embedPlayer.style.display = 'none';
         driveDownloadBtn.style.display = 'none'; // Reset drive btn
         document.getElementById("playbackInfo").style.display = 'none';
 
@@ -703,6 +707,7 @@
         videoPlayer.pause();
         videoPlayer.src = '';
         drivePlayer.src = '';
+        embedPlayer.src = '';
         document.getElementById("inModalPlayerContainer").style.display = 'none';
         currentPlaybackID = null;
         modal.style.display = "none";
@@ -716,29 +721,48 @@
         container.style.display = 'block';
         currentPlaybackID = playbackID; 
         
+        // Check for Google Drive Links
         if (url.includes('drive.google.com')) {
+            container.classList.remove('embed-mode');
             container.classList.add('drive-mode');
             
-            // Clean up Drive link for embed
             let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview').replace('?usp=sharing', '');
             
             videoPlayer.pause();
             videoPlayer.style.display = 'none';
+            embedPlayer.style.display = 'none';
+            embedPlayer.src = '';
             
             drivePlayer.src = embedUrl;
             drivePlayer.style.display = 'block';
-            
-            // Show custom Drive Download button
             driveDownloadBtn.style.display = 'block';
             driveDownloadBtn.onclick = () => {
-                // Open original drive link in new tab for direct download
                 window.open(url.replace('/preview', '/view'), '_blank');
             };
 
-        } else {
+        } 
+        // Check for Embed Links (Vidmoly, etc)
+        else if (url.includes('.html') || url.includes('/embed')) {
             container.classList.remove('drive-mode');
+            container.classList.add('embed-mode');
+            
+            videoPlayer.pause();
+            videoPlayer.style.display = 'none';
             drivePlayer.style.display = 'none';
             drivePlayer.src = '';
+            driveDownloadBtn.style.display = 'none';
+
+            embedPlayer.src = url;
+            embedPlayer.style.display = 'block';
+        }
+        // Normal Direct MP4/Video Links
+        else {
+            container.classList.remove('drive-mode');
+            container.classList.remove('embed-mode');
+            drivePlayer.style.display = 'none';
+            drivePlayer.src = '';
+            embedPlayer.style.display = 'none';
+            embedPlayer.src = '';
             driveDownloadBtn.style.display = 'none';
             
             videoPlayer.style.display = 'block';
@@ -756,7 +780,6 @@
         }
         
         if (seriesTitle !== 'Movie' && season && episodeTitle) {
-            // Fix double Episode word: If episodeTitle already starts with "Episode", don't add it again
             let cleanEpTitle = episodeTitle.trim();
             let label = cleanEpTitle.toLowerCase().startsWith('episode') ? cleanEpTitle : `Episode ${cleanEpTitle}`;
             infoDiv.innerText = `Season ${season.slice(1)} - ${label}`;
@@ -835,6 +858,22 @@
         updateFavBtnState(key);
     }
 
+    function handleNavClick(filter, element) {
+        if(element) {
+            document.querySelectorAll('.nav-item-btn').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+        spinner.style.display = 'block';
+        grid.innerHTML = '';
+        document.getElementById("searchBar").value = '';
+        closeDetail();
+        setTimeout(() => {
+            setFilter(filter);
+            spinner.style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 300);
+    }
+
     function updateFavBtnState(key) {
         const favs = JSON.parse(localStorage.getItem('favs') || '[]');
         const btn = document.getElementById("favoriteBtn");
@@ -889,4 +928,3 @@
 </script>
 </body>
 </html>
-
