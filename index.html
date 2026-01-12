@@ -488,7 +488,7 @@
     const paginationControls = document.querySelector('.pagination-controls');
     const videoPlayer = document.getElementById("inModalVideoPlayer");
     const drivePlayer = document.getElementById("drivePlayer");
-    const embedPlayer = document.getElementById("embedPlayer");
+    const embedPlayer = document.getElementById("embedPlayer"); // نیان پلیئر سلیکٹر
     const driveDownloadBtn = document.getElementById("driveDownloadBtn");
     
     let allContent = [];
@@ -525,7 +525,7 @@
     window.onload = function() {
         loadData();
         setupVideoEvents(); 
-        setTimeout(() => { showAdPopup(null, 7); }, 5000); 
+        setTimeout(() => { showAdPopup(null, 0); }, 10000); 
     };
 
     async function loadData() {
@@ -664,11 +664,11 @@
         videoPlayer.pause();
         videoPlayer.src = '';
         drivePlayer.src = '';
-        embedPlayer.src = '';
+        embedPlayer.src = ''; // ری سیٹ ایمبیڈ
         videoPlayer.style.display = 'none';
         drivePlayer.style.display = 'none';
-        embedPlayer.style.display = 'none';
-        driveDownloadBtn.style.display = 'none'; // Reset drive btn
+        embedPlayer.style.display = 'none'; // ری سیٹ ایمبیڈ
+        driveDownloadBtn.style.display = 'none'; 
         document.getElementById("playbackInfo").style.display = 'none';
 
         updateFavBtnState(key);
@@ -707,7 +707,7 @@
         videoPlayer.pause();
         videoPlayer.src = '';
         drivePlayer.src = '';
-        embedPlayer.src = '';
+        embedPlayer.src = ''; // کلیئر ایمبیڈ
         document.getElementById("inModalPlayerContainer").style.display = 'none';
         currentPlaybackID = null;
         modal.style.display = "none";
@@ -720,54 +720,34 @@
         
         container.style.display = 'block';
         currentPlaybackID = playbackID; 
+
+        // تمام پلیئرز کو پہلے چھپائیں
+        videoPlayer.style.display = 'none';
+        drivePlayer.style.display = 'none';
+        embedPlayer.style.display = 'none';
+        driveDownloadBtn.style.display = 'none';
+        container.classList.remove('drive-mode', 'embed-mode');
+        videoPlayer.pause();
         
-        // Check for Google Drive Links
+        // پلیئر کے لنک کی پہچان (Logic)
         if (url.includes('drive.google.com')) {
-            container.classList.remove('embed-mode');
             container.classList.add('drive-mode');
-            
             let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview').replace('?usp=sharing', '');
-            
-            videoPlayer.pause();
-            videoPlayer.style.display = 'none';
-            embedPlayer.style.display = 'none';
-            embedPlayer.src = '';
-            
             drivePlayer.src = embedUrl;
             drivePlayer.style.display = 'block';
             driveDownloadBtn.style.display = 'block';
-            driveDownloadBtn.onclick = () => {
-                window.open(url.replace('/preview', '/view'), '_blank');
-            };
+            driveDownloadBtn.onclick = () => { window.open(url.replace('/preview', '/view'), '_blank'); };
 
-        } 
-        // Check for Embed Links (Vidmoly, etc)
-        else if (url.includes('.html') || url.includes('/embed')) {
-            container.classList.remove('drive-mode');
+        } else if (url.includes('vidmoly.net') || url.includes('minochinos.com') || url.includes('embed')) {
+            // ایمبیڈ پلیئر کا لاجک
             container.classList.add('embed-mode');
-            
-            videoPlayer.pause();
-            videoPlayer.style.display = 'none';
-            drivePlayer.style.display = 'none';
-            drivePlayer.src = '';
-            driveDownloadBtn.style.display = 'none';
-
             embedPlayer.src = url;
             embedPlayer.style.display = 'block';
-        }
-        // Normal Direct MP4/Video Links
-        else {
-            container.classList.remove('drive-mode');
-            container.classList.remove('embed-mode');
-            drivePlayer.style.display = 'none';
-            drivePlayer.src = '';
-            embedPlayer.style.display = 'none';
-            embedPlayer.src = '';
-            driveDownloadBtn.style.display = 'none';
-            
+
+        } else {
+            // نارمل ویڈیو پلیئر
             videoPlayer.style.display = 'block';
             videoPlayer.src = url;
-            
             videoPlayer.addEventListener('loadedmetadata', function handleLoad() {
                 videoPlayer.removeEventListener('loadedmetadata', handleLoad);
                 const savedTime = localStorage.getItem(`playback_${currentPlaybackID}`);
@@ -856,22 +836,6 @@
         favs = favs.includes(key) ? favs.filter(k => k !== key) : [...favs, key];
         localStorage.setItem('favs', JSON.stringify(favs));
         updateFavBtnState(key);
-    }
-
-    function handleNavClick(filter, element) {
-        if(element) {
-            document.querySelectorAll('.nav-item-btn').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-        }
-        spinner.style.display = 'block';
-        grid.innerHTML = '';
-        document.getElementById("searchBar").value = '';
-        closeDetail();
-        setTimeout(() => {
-            setFilter(filter);
-            spinner.style.display = 'none';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 300);
     }
 
     function updateFavBtnState(key) {
