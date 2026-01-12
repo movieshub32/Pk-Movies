@@ -381,14 +381,21 @@
         <div class="close-btn-fixed" onclick="closeDetail()">&times;</div>
         
         <div id="inModalPlayerContainer">
+            <div id="embedLoader" style="display:none; text-align:center; padding: 40px 0;">
+                <div class="spinner" style="width:30px; height:30px; margin-bottom: 10px;"></div>
+                <p style="font-size: 12px; color: #ff8c1a; margin:0;">Loading Player...</p>
+            </div>
+
             <video id="inModalVideoPlayer" controls controlsList="" playsinline preload="metadata">
                 <source id="inModalVideoSource" src="">
             </video>
+
             <iframe id="drivePlayer" src="" style="display:none;" allow="autoplay; fullscreen" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
-            <iframe id="embedPlayer" src="" style="display:none;" scrolling="no" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
             
+            <iframe id="embedPlayer" src="" style="display:none;" scrolling="no" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+
             <button id="driveDownloadBtn" class="btn" style="background: #2196F3; color: white; display: none; margin-top: 5px; font-size: 12px; padding: 8px;">
-                <i class="fas fa-download"></i> Full Watch & Dawnload
+                <i class="fas fa-download"></i> Full Watch & Download
             </button>
         </div>
         
@@ -488,7 +495,8 @@
     const paginationControls = document.querySelector('.pagination-controls');
     const videoPlayer = document.getElementById("inModalVideoPlayer");
     const drivePlayer = document.getElementById("drivePlayer");
-    const embedPlayer = document.getElementById("embedPlayer"); // نیان پلیئر سلیکٹر
+    const embedPlayer = document.getElementById("embedPlayer");
+    const embedLoader = document.getElementById("embedLoader");
     const driveDownloadBtn = document.getElementById("driveDownloadBtn");
     
     let allContent = [];
@@ -664,10 +672,11 @@
         videoPlayer.pause();
         videoPlayer.src = '';
         drivePlayer.src = '';
-        embedPlayer.src = ''; // ری سیٹ ایمبیڈ
+        embedPlayer.src = '';
         videoPlayer.style.display = 'none';
         drivePlayer.style.display = 'none';
-        embedPlayer.style.display = 'none'; // ری سیٹ ایمبیڈ
+        embedPlayer.style.display = 'none';
+        embedLoader.style.display = 'none';
         driveDownloadBtn.style.display = 'none'; 
         document.getElementById("playbackInfo").style.display = 'none';
 
@@ -707,7 +716,8 @@
         videoPlayer.pause();
         videoPlayer.src = '';
         drivePlayer.src = '';
-        embedPlayer.src = ''; // کلیئر ایمبیڈ
+        embedPlayer.src = '';
+        embedLoader.style.display = 'none';
         document.getElementById("inModalPlayerContainer").style.display = 'none';
         currentPlaybackID = null;
         modal.style.display = "none";
@@ -720,34 +730,53 @@
         
         container.style.display = 'block';
         currentPlaybackID = playbackID; 
-
-        // تمام پلیئرز کو پہلے چھپائیں
+        
+        // Reset All Players
         videoPlayer.style.display = 'none';
         drivePlayer.style.display = 'none';
         embedPlayer.style.display = 'none';
+        embedLoader.style.display = 'none';
         driveDownloadBtn.style.display = 'none';
-        container.classList.remove('drive-mode', 'embed-mode');
-        videoPlayer.pause();
-        
-        // پلیئر کے لنک کی پہچان (Logic)
+
         if (url.includes('drive.google.com')) {
             container.classList.add('drive-mode');
+            container.classList.remove('embed-mode');
+            
             let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview').replace('?usp=sharing', '');
+            
+            videoPlayer.pause();
             drivePlayer.src = embedUrl;
             drivePlayer.style.display = 'block';
+            
             driveDownloadBtn.style.display = 'block';
-            driveDownloadBtn.onclick = () => { window.open(url.replace('/preview', '/view'), '_blank'); };
+            driveDownloadBtn.onclick = () => {
+                window.open(url.replace('/preview', '/view'), '_blank');
+            };
 
         } else if (url.includes('vidmoly.net') || url.includes('minochinos.com') || url.includes('embed')) {
-            // ایمبیڈ پلیئر کا لاجک
+            // EMBED PLAYER LOGIC WITH LOADER
             container.classList.add('embed-mode');
+            container.classList.remove('drive-mode');
+            
+            videoPlayer.pause();
+            embedLoader.style.display = 'block'; // Show Spinner
+            
             embedPlayer.src = url;
-            embedPlayer.style.display = 'block';
+            
+            // When iframe is fully loaded, hide spinner and show player
+            embedPlayer.onload = function() {
+                embedLoader.style.display = 'none';
+                embedPlayer.style.display = 'block';
+            };
 
         } else {
-            // نارمل ویڈیو پلیئر
+            // DIRECT MP4 PLAYER
+            container.classList.remove('drive-mode');
+            container.classList.remove('embed-mode');
+            
             videoPlayer.style.display = 'block';
             videoPlayer.src = url;
+            
             videoPlayer.addEventListener('loadedmetadata', function handleLoad() {
                 videoPlayer.removeEventListener('loadedmetadata', handleLoad);
                 const savedTime = localStorage.getItem(`playback_${currentPlaybackID}`);
