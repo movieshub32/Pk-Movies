@@ -724,84 +724,66 @@
     }
 
     function playVideo(url, playbackID, seriesTitle = 'Movie', season = '', episodeTitle = '') {
-        if(!url) return alert("Link is not available");
-        const container = document.getElementById("inModalPlayerContainer");
-        const infoDiv = document.getElementById("playbackInfo");
-        
-        container.style.display = 'block';
-        currentPlaybackID = playbackID; 
-        
-        // Reset All Players
-        videoPlayer.style.display = 'none';
-        drivePlayer.style.display = 'none';
-        embedPlayer.style.display = 'none';
-        embedLoader.style.display = 'none';
-        driveDownloadBtn.style.display = 'none';
-
-        if (url.includes('drive.google.com')) {
-            container.classList.add('drive-mode');
-            container.classList.remove('embed-mode');
-            
-            let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview').replace('?usp=sharing', '');
-            
-            videoPlayer.pause();
-            drivePlayer.style.display = 'none'; // Hide initially for loader
-            embedLoader.style.display = 'block';
-            drivePlayer.src = embedUrl;
-            
-            drivePlayer.onload = function() {
-                embedLoader.style.display = 'none';
-                drivePlayer.style.display = 'block';
-            };
-
-            driveDownloadBtn.style.display = 'block';
-            driveDownloadBtn.onclick = () => {
-                window.open(url.replace('/preview', '/view'), '_blank');
-            };
-
-        } else if (url.includes('vidmoly.net') || url.includes('minochinos.com') || url.includes('embed')) {
-            container.classList.add('embed-mode');
-            container.classList.remove('drive-mode');
-            
-            videoPlayer.pause();
-            embedPlayer.style.display = 'none'; 
-            embedLoader.style.display = 'block'; 
-            
-            embedPlayer.src = url;
-            
-            embedPlayer.onload = function() {
-                embedLoader.style.display = 'none';
-                embedPlayer.style.display = 'block';
-            };
-
-        } else {
-            container.classList.remove('drive-mode');
-            container.classList.remove('embed-mode');
-            
-            videoPlayer.style.display = 'block';
-            videoPlayer.src = url;
-            
-            videoPlayer.addEventListener('loadedmetadata', function handleLoad() {
-                videoPlayer.removeEventListener('loadedmetadata', handleLoad);
-                const savedTime = localStorage.getItem(`playback_${currentPlaybackID}`);
-                if (savedTime && savedTime > 0) {
-                    videoPlayer.currentTime = Math.max(0, parseFloat(savedTime) - 10);
-                }
-                videoPlayer.play().catch(e => console.log("Manual play required"));
-            });
-            videoPlayer.load();
-        }
-        
-        if (seriesTitle !== 'Movie' && season && episodeTitle) {
-            let cleanEpTitle = episodeTitle.trim();
-            let label = cleanEpTitle.toLowerCase().startsWith('episode') ? cleanEpTitle : `Episode ${cleanEpTitle}`;
-            infoDiv.innerText = `Season ${season.slice(1)} - ${label}`;
-        } else {
-            infoDiv.innerText = seriesTitle;
-        }
-        infoDiv.style.display = 'block';
-        document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
+    if(!url) return alert("Link is not available");
+    const container = document.getElementById("inModalPlayerContainer");
+    const infoDiv = document.getElementById("playbackInfo");
+    
+    container.style.display = 'block';
+    currentPlaybackID = playbackID; 
+    
+    // تمام پلیئرز کو ری سیٹ کریں
+    videoPlayer.style.display = 'none';
+    drivePlayer.style.display = 'none';
+    embedPlayer.style.display = 'none';
+    embedLoader.style.display = 'none';
+    driveDownloadBtn.style.display = 'none';
+    
+    // Streamtape کے لنک کو خود بخود Embed میں تبدیل کرنا
+    if (url.includes('streamtape.to/v/')) {
+    url = url.replace('streamtape.to/v/', 'streamtape.to/e/');
     }
+    
+    if (url.includes('drive.google.com')) {
+    // گوگل ڈرائیو لاجک
+    container.classList.add('drive-mode');
+    let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview');
+    videoPlayer.pause();
+    embedLoader.style.display = 'block';
+    drivePlayer.src = embedUrl;
+    drivePlayer.onload = () => { embedLoader.style.display = 'none'; drivePlayer.style.display = 'block'; };
+    driveDownloadBtn.style.display = 'block';
+    driveDownloadBtn.onclick = () => window.open(url.replace('/preview', '/view'), '_blank');
+    
+    } else if (url.includes('streamtape.to') || url.includes('vidmoly') || url.includes('embed') || url.includes('minochinos')) {
+    // اسٹریم ٹیپ اور دیگر آئی فریم پلیئرز
+    container.classList.add('embed-mode');
+    videoPlayer.pause();
+    embedLoader.style.display = 'block';
+    embedPlayer.src = url; // یہاں اب درست Embed URL جائے گا
+    embedPlayer.onload = () => {
+    embedLoader.style.display = 'none';
+    embedPlayer.style.display = 'block';
+    };
+    
+    } else {
+    // ڈائریکٹ MP4 پلیئر
+    container.classList.remove('drive-mode');
+    videoPlayer.style.display = 'block';
+    videoPlayer.src = url;
+    videoPlayer.load();
+    videoPlayer.play().catch(e => console.log("Manual play required"));
+    }
+    
+    // ٹائٹل دکھانا
+    if (seriesTitle !== 'Movie' && season && episodeTitle) {
+    infoDiv.innerText = `S${season.slice(1)} - ${episodeTitle}`;
+    } else {
+    infoDiv.innerText = seriesTitle;
+    }
+    infoDiv.style.display = 'block';
+    document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
     
 
     function setupVideoEvents() {
