@@ -745,32 +745,36 @@
             let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview').replace('?usp=sharing', '');
             
             videoPlayer.pause();
+            drivePlayer.style.display = 'none'; // Hide initially for loader
+            embedLoader.style.display = 'block';
             drivePlayer.src = embedUrl;
-            drivePlayer.style.display = 'block';
             
+            drivePlayer.onload = function() {
+                embedLoader.style.display = 'none';
+                drivePlayer.style.display = 'block';
+            };
+
             driveDownloadBtn.style.display = 'block';
             driveDownloadBtn.onclick = () => {
                 window.open(url.replace('/preview', '/view'), '_blank');
             };
 
         } else if (url.includes('vidmoly.net') || url.includes('minochinos.com') || url.includes('embed')) {
-            // EMBED PLAYER LOGIC WITH LOADER
             container.classList.add('embed-mode');
             container.classList.remove('drive-mode');
             
             videoPlayer.pause();
-            embedLoader.style.display = 'block'; // Show Spinner
+            embedPlayer.style.display = 'none'; 
+            embedLoader.style.display = 'block'; 
             
             embedPlayer.src = url;
             
-            // When iframe is fully loaded, hide spinner and show player
             embedPlayer.onload = function() {
                 embedLoader.style.display = 'none';
                 embedPlayer.style.display = 'block';
             };
 
         } else {
-            // DIRECT MP4 PLAYER
             container.classList.remove('drive-mode');
             container.classList.remove('embed-mode');
             
