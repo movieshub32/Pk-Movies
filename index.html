@@ -126,14 +126,33 @@
             display: block;
         }
 
-       /* --- MOVIE GRID --- */
+       /* --- MOVIE GRID (RESPONSIVE) --- */
        .movie-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 15px;
-        padding: 20px;
+            display: grid;
+            /* موبائل ڈیفالٹ: 2 کالمز */
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 20px;
+            max-width: 1200px; /* بڑی اسکرین پر مواد بیچ میں رہے گا */
+            margin: 0 auto;
         }
         
+        /* ٹیبلٹ (768px سے اوپر): 4 کالمز */
+        @media (min-width: 768px) {
+            .movie-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+            }
+        }
+
+        /* ڈیسک ٹاپ/لیپ ٹاپ (1024px سے اوپر): 6 کالمز */
+        @media (min-width: 1024px) {
+            .movie-grid {
+                grid-template-columns: repeat(6, 1fr);
+                gap: 20px;
+            }
+        }
+
         @media (max-width: 600px) {
             #searchBar {
                 width: 120px;
@@ -154,6 +173,9 @@
             flex-direction: column;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); 
             border: 1px solid #333;
+        }
+        .movie-card:hover {
+            transform: translateY(-5px); /* ڈیسک ٹاپ پر کارڈ تھوڑا اوپر اٹھے گا */
         }
         .movie-card:active {
             transform: scale(0.98);
@@ -255,6 +277,11 @@
             border: none;
             display: block;
         }
+
+        /* ڈیسک ٹاپ پر پلیئر تھوڑا بڑا ہو جائے */
+        @media (min-width: 768px) {
+            #drivePlayer, #embedPlayer { height: 350px; }
+        }
         
         #inModalVideoPlayer {
             width: 100%;
@@ -316,8 +343,9 @@
              grid-template-columns: repeat(2, 1fr);
              gap: 10px;
         }
-        .category-btn-item {
-            background: #444; padding: 15px; text-align: center; border-radius: 5px; cursor: pointer;
+        /* بڑی اسکرین پر کیٹیگریز بھی 4 کالمز میں */
+        @media (min-width: 600px) {
+            #categoryListOverlay { grid-template-columns: repeat(4, 1fr); }
         }
 
         /* Episode List */
@@ -504,7 +532,7 @@
     let filteredMovies = [];
     let currentFilterType = 'all';
     let currentPage = 1;
-    const MOVIES_PER_PAGE = 20;
+    const MOVIES_PER_PAGE = 30; // بڑی اسکرین پر موویز زیادہ ہوتی ہیں اس لیے 30 کر دیا ہے
     
     let currentDetailData = null; 
     let currentDetailMovieKey = null;
@@ -724,68 +752,60 @@
     }
 
     function playVideo(url, playbackID, seriesTitle = 'Movie', season = '', episodeTitle = '') {
-    if(!url) return alert("Link is not available");
-    const container = document.getElementById("inModalPlayerContainer");
-    const infoDiv = document.getElementById("playbackInfo");
-    
-    container.style.display = 'block';
-    currentPlaybackID = playbackID; 
-    
-    // تمام پلیئرز کو ری سیٹ کریں
-    videoPlayer.style.display = 'none';
-    drivePlayer.style.display = 'none';
-    embedPlayer.style.display = 'none';
-    embedLoader.style.display = 'none';
-    driveDownloadBtn.style.display = 'none';
-    
-    // Streamtape کے لنک کو خود بخود Embed میں تبدیل کرنا
-    if (url.includes('streamtape.to/v/')) {
-    url = url.replace('streamtape.to/v/', 'streamtape.to/e/');
+        if(!url) return alert("Link is not available");
+        const container = document.getElementById("inModalPlayerContainer");
+        const infoDiv = document.getElementById("playbackInfo");
+        
+        container.style.display = 'block';
+        currentPlaybackID = playbackID; 
+        
+        videoPlayer.style.display = 'none';
+        drivePlayer.style.display = 'none';
+        embedPlayer.style.display = 'none';
+        embedLoader.style.display = 'none';
+        driveDownloadBtn.style.display = 'none';
+        
+        if (url.includes('streamtape.to/v/')) {
+            url = url.replace('streamtape.to/v/', 'streamtape.to/e/');
+        }
+        
+        if (url.includes('drive.google.com')) {
+            container.classList.add('drive-mode');
+            let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview');
+            videoPlayer.pause();
+            embedLoader.style.display = 'block';
+            drivePlayer.src = embedUrl;
+            drivePlayer.onload = () => { embedLoader.style.display = 'none'; drivePlayer.style.display = 'block'; };
+            driveDownloadBtn.style.display = 'block';
+            driveDownloadBtn.onclick = () => window.open(url.replace('/preview', '/view'), '_blank');
+        
+        } else if (url.includes('dailymotion.com') || url.includes('streamtape.to') || url.includes('vidmoly') || url.includes('embed') || url.includes('minochinos')) {
+            container.classList.add('embed-mode');
+            videoPlayer.pause();
+            embedLoader.style.display = 'block';
+            embedPlayer.src = url; 
+            embedPlayer.onload = () => {
+                embedLoader.style.display = 'none';
+                embedPlayer.style.display = 'block';
+            };
+        
+        } else {
+            container.classList.remove('drive-mode');
+            videoPlayer.style.display = 'block';
+            videoPlayer.src = url;
+            videoPlayer.load();
+            videoPlayer.play().catch(e => console.log("Manual play required"));
+        }
+        
+        if (seriesTitle !== 'Movie' && season && episodeTitle) {
+            infoDiv.innerText = `S${season.slice(1)} - ${episodeTitle}`;
+        } else {
+            infoDiv.innerText = seriesTitle;
+        }
+        infoDiv.style.display = 'block';
+        document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
     }
     
-    if (url.includes('drive.google.com')) {
-    // گوگل ڈرائیو لاجک
-    container.classList.add('drive-mode');
-    let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview');
-    videoPlayer.pause();
-    embedLoader.style.display = 'block';
-    drivePlayer.src = embedUrl;
-    drivePlayer.onload = () => { embedLoader.style.display = 'none'; drivePlayer.style.display = 'block'; };
-    driveDownloadBtn.style.display = 'block';
-    driveDownloadBtn.onclick = () => window.open(url.replace('/preview', '/view'), '_blank');
-    
-    } else if (url.includes('streamtape.to') || url.includes('vidmoly') || url.includes('embed') || url.includes('minochinos')) {
-    // اسٹریم ٹیپ اور دیگر آئی فریم پلیئرز
-    container.classList.add('embed-mode');
-    videoPlayer.pause();
-    embedLoader.style.display = 'block';
-    embedPlayer.src = url; // یہاں اب درست Embed URL جائے گا
-    embedPlayer.onload = () => {
-    embedLoader.style.display = 'none';
-    embedPlayer.style.display = 'block';
-    };
-    
-    } else {
-    // ڈائریکٹ MP4 پلیئر
-    container.classList.remove('drive-mode');
-    videoPlayer.style.display = 'block';
-    videoPlayer.src = url;
-    videoPlayer.load();
-    videoPlayer.play().catch(e => console.log("Manual play required"));
-    }
-    
-    // ٹائٹل دکھانا
-    if (seriesTitle !== 'Movie' && season && episodeTitle) {
-    infoDiv.innerText = `S${season.slice(1)} - ${episodeTitle}`;
-    } else {
-    infoDiv.innerText = seriesTitle;
-    }
-    infoDiv.style.display = 'block';
-    document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    
-    
-
     function setupVideoEvents() {
         let saveTimeout;
         videoPlayer.ontimeupdate = function() {
