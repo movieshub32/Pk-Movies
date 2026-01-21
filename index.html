@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Pk Movies</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -128,22 +129,23 @@
 
        /* --- MOVIE GRID (RESPONSIVE) --- */
        .movie-grid {
-            display: grid;
-            /* موبائل ڈیفالٹ: 2 کالمز */
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            padding: 20px;
-            max-width: 1200px; /* بڑی اسکرین پر مواد بیچ میں رہے گا */
-            margin: 0 auto;
-        }
-        
-        /* ٹیبلٹ (768px سے اوپر): 4 کالمز */
-        @media (min-width: 768px) {
-            .movie-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 20px;
-            }
-        }
+       display: grid;
+       grid-template-columns: repeat(2, 1fr); /* موبائل پر 2 موویز */
+       gap: 15px;
+       padding: 20px;
+       max-width: 1100px; /* ڈیسک ٹاپ پر گرڈ کو زیادہ چوڑا ہونے سے روکا */
+       margin: 0 auto;
+       min-height: 600px; /* پیج لوڈنگ کے وقت جگہ برقرار رکھنے کے لیے */
+       }
+       
+       /* ٹیبلٹ اور ڈیسک ٹاپ کے لیے مخصوص 4 کالمز */
+       @media (min-width: 768px) {
+       .movie-grid {
+       grid-template-columns: repeat(4, 1fr); /* صرف 4 موویز ایک لائن میں */
+       gap: 25px;
+       }
+       }
+       
 
         /* ڈیسک ٹاپ/لیپ ٹاپ (1024px سے اوپر): 6 کالمز */
         @media (min-width: 1024px) {
@@ -337,16 +339,42 @@
         .nav-item-btn i { font-size: 20px; display: block; margin-bottom: 2px; }
         .nav-item-btn span { font-size: 10px; font-weight: bold; }
         
-        /* Categories Overlay */
+        /* Categories Overlay Improved Design */
         #categoryListOverlay {
-             display: grid;
-             grid-template-columns: repeat(2, 1fr);
-             gap: 10px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* موبائل پر 2 لائنیں */
+        gap: 12px;
+        padding: 10px;
         }
-        /* بڑی اسکرین پر کیٹیگریز بھی 4 کالمز میں */
-        @media (min-width: 600px) {
-            #categoryListOverlay { grid-template-columns: repeat(4, 1fr); }
+        
+        @media (min-width: 768px) {
+        #categoryListOverlay {
+        grid-template-columns: repeat(4, 1fr); /* بڑی اسکرین پر 4 لائنیں */
         }
+        }
+        
+        .category-btn-item {
+        background: #333;
+        color: #fff;
+        padding: 12px 8px;
+        text-align: center;
+        border-radius: 6px;
+        cursor: pointer;
+        border: 1px solid #444;
+        font-size: 14px;
+        font-weight: bold;
+        transition: 0.3s;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        }
+        
+        .category-btn-item:hover {
+        background: #ff8c1a;
+        color: #000;
+        border-color: #fff;
+        }
+        
 
         /* Episode List */
         .episode-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #444; background: #333; margin-bottom: 5px; border-radius: 4px; }
@@ -374,6 +402,15 @@
     <div class="side-link" onclick="handleNavClick('popular', null); toggleSideMenu()">
         <i class="fas fa-star" style="color: gold;"></i> Popular Content
     </div>
+    
+    <div class="side-link" onclick="handleNavClick('Indian Dramas', null); toggleSideMenu()">
+    <i class="fas fa-tv" style="color: #ff9800;"></i> Indian Dramas
+    </div>
+    
+    <div class="side-link" onclick="handleNavClick('Turkish Dramas', null); toggleSideMenu()">
+    <i class="fas fa-mosque" style="color: #03a9f4;"></i> Turkish Dramas
+    </div>
+    
     
     <div class="side-link" onclick="openRequestModal(); toggleSideMenu()">
         <i class="fas fa-envelope-open-text" style="color: #00e676;"></i> Request Movie
@@ -532,7 +569,7 @@
     let filteredMovies = [];
     let currentFilterType = 'all';
     let currentPage = 1;
-    const MOVIES_PER_PAGE = 30; // بڑی اسکرین پر موویز زیادہ ہوتی ہیں اس لیے 30 کر دیا ہے
+    const MOVIES_PER_PAGE = 12; // بڑی اسکرین پر موویز زیادہ ہوتی ہیں اس لیے 30 کر دیا ہے
     
     let currentDetailData = null; 
     let currentDetailMovieKey = null;
@@ -561,7 +598,7 @@
     window.onload = function() {
         loadData();
         setupVideoEvents(); 
-        setTimeout(() => { showAdPopup(null, 20); }, 10000); 
+        setTimeout(() => { showAdPopup(null, 0); }, 1000); 
     };
 
     async function loadData() {
@@ -752,59 +789,71 @@
     }
 
     function playVideo(url, playbackID, seriesTitle = 'Movie', season = '', episodeTitle = '') {
-        if(!url) return alert("Link is not available");
-        const container = document.getElementById("inModalPlayerContainer");
-        const infoDiv = document.getElementById("playbackInfo");
-        
-        container.style.display = 'block';
-        currentPlaybackID = playbackID; 
-        
-        videoPlayer.style.display = 'none';
-        drivePlayer.style.display = 'none';
-        embedPlayer.style.display = 'none';
-        embedLoader.style.display = 'none';
-        driveDownloadBtn.style.display = 'none';
-        
-        if (url.includes('streamtape.to/v/')) {
-            url = url.replace('streamtape.to/v/', 'streamtape.to/e/');
-        }
-        
-        if (url.includes('drive.google.com')) {
-            container.classList.add('drive-mode');
-            let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview');
-            videoPlayer.pause();
-            embedLoader.style.display = 'block';
-            drivePlayer.src = embedUrl;
-            drivePlayer.onload = () => { embedLoader.style.display = 'none'; drivePlayer.style.display = 'block'; };
-            driveDownloadBtn.style.display = 'block';
-            driveDownloadBtn.onclick = () => window.open(url.replace('/preview', '/view'), '_blank');
-        
-        } else if (url.includes('dailymotion.com') || url.includes('streamtape.to') || url.includes('vidmoly') || url.includes('embed') || url.includes('minochinos')) {
-            container.classList.add('embed-mode');
-            videoPlayer.pause();
-            embedLoader.style.display = 'block';
-            embedPlayer.src = url; 
-            embedPlayer.onload = () => {
-                embedLoader.style.display = 'none';
-                embedPlayer.style.display = 'block';
-            };
-        
-        } else {
-            container.classList.remove('drive-mode');
-            videoPlayer.style.display = 'block';
-            videoPlayer.src = url;
-            videoPlayer.load();
-            videoPlayer.play().catch(e => console.log("Manual play required"));
-        }
-        
-        if (seriesTitle !== 'Movie' && season && episodeTitle) {
-            infoDiv.innerText = `S${season.slice(1)} - ${episodeTitle}`;
-        } else {
-            infoDiv.innerText = seriesTitle;
-        }
-        infoDiv.style.display = 'block';
-        document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
+    if(!url) return alert("Link is not available");
+    const container = document.getElementById("inModalPlayerContainer");
+    const infoDiv = document.getElementById("playbackInfo");
+    
+    container.style.display = 'block';
+    currentPlaybackID = playbackID; 
+    
+    videoPlayer.style.display = 'none';
+    drivePlayer.style.display = 'none';
+    embedPlayer.style.display = 'none';
+    embedLoader.style.display = 'none';
+    driveDownloadBtn.style.display = 'none';
+    
+    // --- Streamtape Link Fix ---
+    if (url.includes('streamtape.to/v/')) {
+    url = url.replace('streamtape.to/v/', 'streamtape.to/e/');
     }
+    
+    // --- Google Drive or Embed Players (In ko nahi cheda gaya) ---
+    if (url.includes('drive.google.com')) {
+    container.classList.add('drive-mode');
+    let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview');
+    videoPlayer.pause();
+    embedLoader.style.display = 'block';
+    drivePlayer.src = embedUrl;
+    drivePlayer.onload = () => { embedLoader.style.display = 'none'; drivePlayer.style.display = 'block'; };
+    driveDownloadBtn.style.display = 'block';
+    driveDownloadBtn.onclick = () => window.open(url.replace('/preview', '/view'), '_blank');
+    } 
+    else if (url.includes('dailymotion.com') || url.includes('streamtape.to') || url.includes('vidmoly') || url.includes('embed')) {
+    container.classList.add('embed-mode');
+    videoPlayer.pause();
+    embedLoader.style.display = 'block';
+    embedPlayer.src = url; 
+    embedPlayer.onload = () => { embedLoader.style.display = 'none'; embedPlayer.style.display = 'block'; };
+    } 
+    // --- HTML5 Video Player (Resume logic yahan hai) ---
+    else {
+    container.classList.remove('drive-mode');
+    videoPlayer.style.display = 'block';
+    videoPlayer.src = url;
+    videoPlayer.load();
+    
+    // 1. لوکل اسٹوریج سے ٹائم نکالنا
+    const savedTime = localStorage.getItem(`playback_${playbackID}`);
+    
+    videoPlayer.onloadedmetadata = function() {
+    // 2. اگر پہلے سے ٹائم موجود ہے تو وہاں پہنچا دو
+    if (savedTime) {
+    videoPlayer.currentTime = parseFloat(savedTime);
+    }
+    videoPlayer.play().catch(e => console.log("Manual play required"));
+    };
+    }
+    
+    
+    if (seriesTitle !== 'Movie' && season && episodeTitle) {
+    infoDiv.innerText = `S${season.slice(1)} - ${episodeTitle}`;
+    } else {
+    infoDiv.innerText = seriesTitle;
+    }
+    infoDiv.style.display = 'block';
+    document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
     
     function setupVideoEvents() {
         let saveTimeout;
@@ -927,3 +976,4 @@
 </script>
 </body>
 </html>
+
