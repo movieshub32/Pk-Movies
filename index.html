@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Pk Movies</title>
+    <script src="https://pl25995595.effectivegatecpm.com/3a/26/d6/3a26d6f14c2251bce8f2a8a40b3e84cb.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -416,6 +417,8 @@
        color: #000;
        }
        
+       .no-scroll { overflow: hidden; }
+       
     </style>
 </head>
 
@@ -627,7 +630,7 @@
     window.onload = function() {
         loadData();
         setupVideoEvents(); 
-        setTimeout(() => { showAdPopup(null, 0); }, 1000); 
+        setTimeout(() => { showAdPopup(null, 0); }, 10000); 
     };
 
     async function loadData() {
@@ -779,7 +782,15 @@
 
         otherBtn.style.display = 'block';
         otherBtn.innerText = "Alternative Download";
-        otherBtn.onclick = () => showAdPopup(null, 15, movie.play);
+        // یہاں 'otherDownloadLink' وہ لنک ہے جو آپ ایڈمن پینل سے ڈالتے ہیں
+        otherBtn.onclick = () => {
+        if(movie.otherDownloadLink) {
+        window.open(movie.otherDownloadLink, '_blank');
+        } else {
+        alert("Download link not available");
+        }
+        };
+        
 
         if(movie.type === 'series') {
             playBtn.style.display = 'none';
@@ -800,6 +811,7 @@
             playBtn.onclick = () => playVideo(movie.play, key, movie.title);
         }
         document.getElementById("modal").style.display = "block";
+        document.body.classList.add("no-scroll");
     }
 
     function closeDetail() {
@@ -815,6 +827,7 @@
         document.getElementById("inModalPlayerContainer").style.display = 'none';
         currentPlaybackID = null;
         modal.style.display = "none";
+        document.body.classList.remove("no-scroll");
     }
 
     function playVideo(url, playbackID, seriesTitle = 'Movie', season = '', episodeTitle = '') {
@@ -976,8 +989,8 @@ function renderEpisodeItems(container, keys, eps, season, seriesTitle) {
             <span>${ep.title}</span>
             <div class="ep-actions">
                 <button class="ep-play" onclick="playVideo('${ep.link}', '${playbackID}', '${seriesTitle}', '${season}', '${ep.title.replace(/'/g, "\\ text-align: left;")}')">Play</button>
-                <button class="ep-down" onclick="showAdPopup(null, 15, '${ep.link}')">Download</button> 
-            </div>
+                <button class="ep-down" onclick="window.open('${ep.link}', '_blank')">Download</button>
+       </div>
         </div>`;
     });
 }
