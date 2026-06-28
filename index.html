@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,441 +7,504 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-       /* --- BASE STYLES --- */
+        /* ============ TOKENS ============ */
+        :root{
+            --bg-0:#0a0a12;
+            --bg-1:#11111c;
+            --surface:#181826;
+            --surface-2:#1f1f30;
+            --border:#2a2a3d;
+            --ember:#ff5b3d;
+            --amber:#ffb238;
+            --text:#f2f2f7;
+            --text-dim:#9a9ab0;
+            --success:#33d17a;
+            --pink:#ff3d77;
+            --radius:14px;
+            --shadow-lg: 0 18px 40px rgba(0,0,0,.55);
+        }
+
+        *{ box-sizing:border-box; }
+
+        ::-webkit-scrollbar{ width:8px; height:8px; }
+        ::-webkit-scrollbar-track{ background:var(--bg-0); }
+        ::-webkit-scrollbar-thumb{ background:linear-gradient(var(--ember),var(--amber)); border-radius:10px; }
+
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a, #101020);
-            color: #fff;
+            font-family: 'Inter', sans-serif;
+            background:
+                radial-gradient(900px 500px at 10% -10%, rgba(255,91,61,.10), transparent 60%),
+                radial-gradient(900px 600px at 110% 10%, rgba(255,178,56,.08), transparent 60%),
+                linear-gradient(180deg, var(--bg-0), var(--bg-1));
+            color: var(--text);
             margin: 0;
-            padding: 0 0 60px 0; 
+            padding: 0 0 78px 0;
             overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* --- HEADER --- */
         .header {
-            background-color: #0d0d1a;
-            padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            background: rgba(10,10,18,.85);
+            backdrop-filter: blur(14px);
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky; 
+            position: sticky;
             top: 0;
             z-index: 100;
         }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+        .header-left { display: flex; align-items: center; gap: 14px; }
 
         .menu-btn {
-            font-size: 24px;
+            font-size: 20px;
             cursor: pointer;
-            color: #fff;
+            color: var(--text);
+            width: 38px; height: 38px;
+            display:flex; align-items:center; justify-content:center;
+            border-radius: 10px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            transition: .2s;
         }
+        .menu-btn:hover{ border-color: var(--ember); color: var(--ember); }
 
         .header h1 {
             margin: 0;
-            padding: 0;
-            background: linear-gradient(90deg, #ff4d4d, #ff8c1a);
+            font-family:'Poppins',sans-serif;
+            background: linear-gradient(90deg, var(--ember), var(--amber));
             -webkit-background-clip: text;
             color: transparent;
-            font-size: 24px;
-            cursor: pointer; 
-            font-weight: bold;
+            font-size: 22px;
+            cursor: pointer;
+            font-weight: 800;
+            letter-spacing: .3px;
         }
 
-       #searchBar {
-            padding: 8px 10px;
-            border: 1px solid #ff8c1a;
-            border-radius: 4px;
-            background-color: #2a2a2a;
-            color: #fff;
+        #searchBar {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background-color: var(--surface);
+            color: var(--text);
             width: 150px;
             outline: none;
-            transition: width 0.3s;
+            font-family:'Inter',sans-serif;
+            font-size: 13px;
+            transition: all 0.25s;
         }
+        #searchBar::placeholder{ color: var(--text-dim); }
         #searchBar:focus {
             width: 200px;
+            border-color: var(--ember);
+            box-shadow: 0 0 0 3px rgba(255,91,61,.15);
         }
 
         /* --- SIDEBAR MENU --- */
         #sideMenu {
             position: fixed;
             top: 0;
-            left: -280px; 
+            left: -290px;
             width: 280px;
             height: 100%;
-            background: #1e1e2d;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+            background: linear-gradient(180deg, var(--surface), var(--bg-0));
+            box-shadow: 2px 0 30px rgba(0,0,0,.6);
+            border-right: 1px solid var(--border);
             z-index: 2000;
-            transition: left 0.3s ease;
-            padding-top: 60px;
+            transition: left 0.32s cubic-bezier(.4,0,.2,1);
+            padding-top: 65px;
             display: flex;
             flex-direction: column;
         }
-        #sideMenu.active {
-            left: 0;
-        }
+        #sideMenu.active { left: 0; }
         .side-menu-close {
             position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 35px;
+            top: 14px;
+            right: 18px;
+            font-size: 30px;
             cursor: pointer;
-            color: #ff4d4d;
+            color: var(--ember);
+            width:38px; height:38px;
+            display:flex; align-items:center; justify-content:center;
+            border-radius:10px;
+            transition:.2s;
         }
+        .side-menu-close:hover{ background: rgba(255,91,61,.12); }
         .side-link {
-            padding: 15px 25px;
+            padding: 15px 24px;
             text-decoration: none;
-            font-size: 18px;
+            font-size: 15px;
+            font-weight: 500;
             color: #ddd;
             display: flex;
             align-items: center;
-            gap: 15px;
-            border-bottom: 1px solid #333;
+            gap: 14px;
+            border-bottom: 1px solid var(--border);
             transition: 0.2s;
             cursor: pointer;
         }
+        .side-link i{ width: 20px; text-align: center; }
         .side-link:hover {
-            background: #2a2a3d;
-            color: #ff8c1a;
-            padding-left: 35px;
+            background: rgba(255,91,61,.08);
+            color: var(--amber);
+            padding-left: 30px;
         }
         .side-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(2px);
             z-index: 1900;
             display: none;
         }
-        .side-overlay.active {
-            display: block;
+        .side-overlay.active { display: block; }
+
+        /* --- MOVIE GRID --- */
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            padding: 18px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 600px;
         }
 
-       /* --- MOVIE GRID (RESPONSIVE) --- */
-       .movie-grid {
-       display: grid;
-       grid-template-columns: repeat(2, 1fr); /* موبائل پر 2 موویز */
-       gap: 15px;
-       padding: 20px;
-       max-width: 1100px; /* ڈیسک ٹاپ پر گرڈ کو زیادہ چوڑا ہونے سے روکا */
-       margin: 0 auto;
-       min-height: 600px; /* پیج لوڈنگ کے وقت جگہ برقرار رکھنے کے لیے */
-       }
-       
-       /* ٹیبلٹ اور ڈیسک ٹاپ کے لیے مخصوص 4 کالمز */
-       @media (min-width: 768px) {
-       .movie-grid {
-       grid-template-columns: repeat(4, 1fr); /* صرف 4 موویز ایک لائن میں */
-       gap: 25px;
-       }
-       }
-       
-
-        /* ڈیسک ٹاپ/لیپ ٹاپ (1024px سے اوپر): 6 کالمز */
+        @media (min-width: 768px) {
+            .movie-grid { grid-template-columns: repeat(4, 1fr); gap: 22px; padding: 22px; }
+        }
         @media (min-width: 1024px) {
-            .movie-grid {
-                grid-template-columns: repeat(6, 1fr);
-                gap: 20px;
-            }
+            .movie-grid { grid-template-columns: repeat(6, 1fr); gap: 20px; }
+        }
+        @media (max-width: 600px) {
+            #searchBar { width: 115px; }
+            .header h1 { font-size: 19px; }
         }
 
-        @media (max-width: 600px) {
-            #searchBar {
-                width: 120px;
-            }
-            .header h1 {
-                font-size: 20px;
-            }
-        }
-        
         .movie-card {
-            background: #1f1f2e; 
-            border-radius: 4px; 
+            background: var(--surface);
+            border-radius: var(--radius);
             overflow: hidden;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform .25s, box-shadow .25s, border-color .25s;
             position: relative;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); 
-            border: 1px solid #333;
+            box-shadow: 0 6px 16px rgba(0,0,0,.4);
+            border: 1px solid var(--border);
         }
         .movie-card:hover {
-            transform: translateY(-5px); /* ڈیسک ٹاپ پر کارڈ تھوڑا اوپر اٹھے گا */
+            transform: translateY(-6px);
+            border-color: var(--ember);
+            box-shadow: var(--shadow-lg);
         }
-        .movie-card:active {
-            transform: scale(0.98);
+        .movie-card:active { transform: scale(0.97); }
+
+        .movie-card img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            object-fit: cover;
+            background-color: #000;
+            display:block;
         }
 
-        .movie-card img {  
-            width: 100%;  
-            aspect-ratio: 3/4;   
-            object-fit: cover;   
-            background-color: #000;   
-        }  
+        .movie-card p {
+            padding: 10px 10px 2px 10px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            font-family:'Inter',sans-serif;
+            color: var(--text);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-        .movie-card p {  
-            padding: 8px; 
-            text-align: left; 
-            font-size: 13px; 
-            font-weight: 700; 
-            color: #fff;  
-            margin: 0;  
-            white-space: nowrap;  
-            overflow: hidden;  
-            text-overflow: ellipsis; 
-        }  
-          
-        .category-badge {  
-            color: #ff8c1a; 
-            padding: 0 8px 8px 8px; 
-            font-size: 11px;   
-            font-weight: bold;  
-            display: block; 
-            text-align: left;  
+        .category-badge {
+            color: var(--amber);
+            padding: 0 10px 10px 10px;
+            font-size: 10.5px;
+            font-weight: 700;
+            display: block;
+            text-align: left;
+            text-transform: uppercase;
+            letter-spacing: .4px;
         }
 
         /* --- PAGINATION & SPINNER --- */
-        .pagination-controls { display: flex; justify-content: center; gap: 20px; padding: 20px; }
-        .page-btn { background: #ff4d4d; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .page-btn:disabled { background: #444; cursor: not-allowed; color: #888; }
-        #loadingSpinner { display: none; text-align: center; padding: 50px; }
-        .spinner { 
-            border: 5px solid #333; 
-            border-top: 5px solid #ff8c1a; 
-            border-radius: 50%; 
-            width: 40px; 
-            height: 40px; 
-            animation: spin 1s linear infinite; 
-            margin: 20px auto; 
+        .pagination-controls { display: flex; justify-content: center; gap: 16px; padding: 10px 20px 30px; }
+        .page-btn {
+            background: linear-gradient(135deg, var(--ember), var(--amber));
+            color: #160a05;
+            padding: 11px 26px;
+            border: none;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            box-shadow: 0 8px 18px rgba(255,91,61,.25);
+            transition: .2s;
+        }
+        .page-btn:hover{ filter: brightness(1.08); }
+        .page-btn:disabled { background: var(--surface-2); color: #777; cursor: not-allowed; box-shadow:none; }
+
+        #loadingSpinner { display: none; text-align: center; padding: 60px; }
+        .spinner {
+            border: 4px solid var(--surface-2);
+            border-top: 4px solid var(--ember);
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            animation: spin 0.9s linear infinite;
+            margin: 18px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #loadingSpinner p{ color: var(--text-dim); font-size: 13px; letter-spacing:.3px; }
 
         /* --- MODALS --- */
-        .movie-detail, .modal-overlay { 
-            display: none; 
-            position: fixed; 
-            inset: 0; 
-            background: rgba(0,0,0,0.9); 
-            backdrop-filter: blur(5px); 
-            padding: 20px; 
-            overflow-y: auto; 
-            z-index: 3000; 
-        }
-        
-        .detail-content, .modal-box { 
-            max-width: 600px; 
-            margin: 40px auto; 
-            background: #2a2a2a; 
-            padding: 20px; 
-            border-radius: 12px; 
-            position: relative; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        .movie-detail, .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(5,5,10,0.88);
+            backdrop-filter: blur(8px);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 3000;
         }
 
-        .close-btn-fixed { 
-            position: absolute; 
-            top: -40px; 
-            right: 1%;
-            font-size: 40px;
-            color: #ff4d4d;
+        .detail-content, .modal-box {
+            max-width: 600px;
+            margin: 40px auto;
+            background: var(--surface);
+            padding: 22px;
+            border-radius: 18px;
+            position: relative;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0,0,0,.7);
+        }
+
+        .close-btn-fixed {
+            position: absolute;
+            top: -44px;
+            right: 0;
+            font-size: 34px;
+            line-height: 34px;
+            width:40px; height:40px;
+            display:flex; align-items:center; justify-content:center;
+            color: #fff;
+            background: rgba(255,91,61,.18);
+            border: 1px solid var(--ember);
+            border-radius: 50%;
             cursor: pointer;
             z-index: 100;
+            transition:.2s;
         }
+        .close-btn-fixed:hover{ background: var(--ember); }
 
         #inModalPlayerContainer {
             width: 100%;
             background: #000;
-            margin-bottom: 5px; 
-            display: none; 
+            margin-bottom: 14px;
+            display: none;
             position: relative;
             padding: 30px 0;
-            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
         }
-        
-        #inModalPlayerContainer.drive-mode, #inModalPlayerContainer.embed-mode {
-            padding: 0 !important;
-        }
-        
+
+        #inModalPlayerContainer.drive-mode, #inModalPlayerContainer.embed-mode { padding: 0 !important; }
+
         #drivePlayer, #embedPlayer {
             width: 100%;
-            height: 250px; 
+            height: 250px;
             border: none;
             display: block;
         }
 
-        /* ڈیسک ٹاپ پر پلیئر تھوڑا بڑا ہو جائے */
         @media (min-width: 768px) {
             #drivePlayer, #embedPlayer { height: 350px; }
         }
-        
-        #inModalVideoPlayer {
-            width: 100%;
-            height: auto;
-            max-height: 350px; 
-        }
-        
-        .detail-content img { width: 100%; border-radius: 8px; margin-bottom: 10px; }
-        
-        .btn { 
+
+        #inModalVideoPlayer { width: 100%; height: auto; max-height: 350px; border-radius: 12px; }
+
+        .detail-content img { width: 100%; border-radius: 12px; margin-bottom: 14px; display:block; }
+
+        .btn {
             display: block;
             width: 100%;
-            padding: 12px; 
+            padding: 13px;
             margin-top: 10px;
-            background: #ff9800; 
-            color: #000; 
+            background: linear-gradient(135deg, var(--amber), var(--ember));
+            color: #160a05;
             border: none;
-            border-radius: 6px; 
-            font-weight: bold; 
-            cursor: pointer; 
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
             text-align: center;
+            transition: filter .2s, transform .15s;
         }
-        
+        .btn:hover{ filter: brightness(1.06); }
+        .btn:active{ transform: scale(0.98); }
+
         .form-group { margin-bottom: 15px; }
-        .form-label { display: block; margin-bottom: 5px; color: #bbb; }
+        .form-label { display: block; margin-bottom: 6px; color: var(--text-dim); font-size: 13px; }
         .form-input, .form-select {
-            width: 100%; padding: 10px; background: #1a1a1a; border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box;
+            width: 100%; padding: 11px; background: var(--bg-0); border: 1px solid var(--border);
+            color: white; border-radius: 8px; box-sizing: border-box; font-family:'Inter',sans-serif;
         }
+        .form-input:focus, .form-select:focus{ outline:none; border-color: var(--ember); }
 
         /* --- BOTTOM NAV --- */
         #bottomNav {
             position: fixed;
-            bottom: 0;
-            left: 0;
+            bottom: 0; left: 0;
             width: 100%;
-            height: 60px;
-            background-color: #1e1e2d;
-            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
+            height: 64px;
+            background: rgba(15,15,24,.92);
+            backdrop-filter: blur(14px);
             display: flex;
             justify-content: space-around;
             align-items: center;
-            z-index: 1000; 
-            border-top: 2px solid #ff8c1a;
+            z-index: 1000;
+            border-top: 1px solid var(--border);
         }
         .nav-item-btn {
-            color: #aaa;
+            color: var(--text-dim);
             text-align: center;
             cursor: pointer;
-            padding: 5px;
+            padding: 6px;
             flex-grow: 1;
+            transition: .2s;
         }
-        .nav-item-btn.active { color: #ff8c1a; transform: scale(1.1); }
-        .nav-item-btn i { font-size: 20px; display: block; margin-bottom: 2px; }
-        .nav-item-btn span { font-size: 10px; font-weight: bold; }
-        
-        /* Categories Overlay Improved Design */
+        .nav-item-btn.active { color: var(--amber); transform: scale(1.07); }
+        .nav-item-btn i { font-size: 18px; display: block; margin-bottom: 3px; }
+        .nav-item-btn span { font-size: 10px; font-weight: 700; letter-spacing:.3px; }
+
+        /* Categories Overlay */
         #categoryListOverlay {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr); /* موبائل پر 2 لائنیں */
-        gap: 12px;
-        padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 6px;
         }
-        
         @media (min-width: 768px) {
-        #categoryListOverlay {
-        grid-template-columns: repeat(4, 1fr); /* بڑی اسکرین پر 4 لائنیں */
+            #categoryListOverlay { grid-template-columns: repeat(4, 1fr); }
         }
-        }
-        
         .category-btn-item {
-        background: #333;
-        color: #fff;
-        padding: 12px 8px;
-        text-align: center;
-        border-radius: 6px;
-        cursor: pointer;
-        border: 1px solid #444;
-        font-size: 14px;
-        font-weight: bold;
-        transition: 0.3s;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+            background: var(--surface-2);
+            color: #fff;
+            padding: 13px 8px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        
         .category-btn-item:hover {
-        background: #ff8c1a;
-        color: #000;
-        border-color: #fff;
+            background: linear-gradient(135deg, var(--ember), var(--amber));
+            color: #160a05;
+            border-color: transparent;
         }
-        
 
         /* Episode List */
-        .episode-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #444; background: #333; margin-bottom: 5px; border-radius: 4px; }
-        .ep-actions button { margin-left: 5px; padding: 5px 10px; border: none; border-radius: 3px; cursor: pointer; color: #fff;}
-        .ep-play { background: #00bcd4; }
-        .ep-down { background: #4caf50; }
-        
+        .episode-item {
+            display: flex; justify-content: space-between; align-items:center;
+            padding: 11px 12px; border: 1px solid var(--border); background: var(--surface-2);
+            margin-bottom: 7px; border-radius: 8px; font-size: 13px;
+        }
+        .ep-actions button {
+            margin-left: 6px; padding: 6px 12px; border: none; border-radius: 6px;
+            cursor: pointer; color: #fff; font-size: 12px; font-weight: 600; transition:.2s;
+        }
+        .ep-play { background: #00b8d4; }
+        .ep-play:hover{ background:#00d4f5; }
+        .ep-down { background: var(--success); }
+        .ep-down:hover{ background:#3fe88f; }
+
         /* Ad Pop-up */
-        #adPopup { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); display: none; justify-content: center; align-items: center; z-index: 10000; }
+        #adPopup { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 10000; }
         #adIframeContainer { width: 90%; height: 80%; position: relative; }
-        #adIframe { width: 100%; height: 100%; border: none; }
-        #adTimer { position: absolute; top: -30px; right: 0; color: white; font-size: 18px; font-weight: bold; }
-      
-     /* Episode Grouping Styles */
-       .ep-group-btn {
-       background: #444;
-       color: #fff;
-       width: 100%;
-       padding: 12px;
-       margin-top: 5px;
-       border: 1px solid #555;
-       text-align: left;
-       font-weight: bold;
-       cursor: pointer;
-       display: flex;
-       justify-content: space-between;
-       align-items: center;
-       border-radius: 4px;
-       }
-       .ep-group-content {
-       display: none; /* شروع میں چھپا ہوا ہوگا */
-       background: #222;
-       padding: 5px;
-       border: 1px solid #333;
-       margin-bottom: 10px;
-       }
-       .ep-group-btn.active {
-       background: #fff;
-       color: #000;
-       }
-       
-       .no-scroll { overflow: hidden; }
-       
+        #adIframe { width: 100%; height: 100%; border: none; border-radius: 10px; }
+        #adTimer {
+            position: absolute; top: -36px; right: 0; color: white; font-size: 15px; font-weight: 700;
+            background: var(--surface); padding: 6px 14px; border-radius: 999px; border:1px solid var(--border);
+        }
+
+        /* Episode Grouping */
+        .ep-group-btn {
+            background: var(--surface-2);
+            color: #fff;
+            width: 100%;
+            padding: 13px;
+            margin-top: 7px;
+            border: 1px solid var(--border);
+            text-align: left;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            transition:.2s;
+        }
+        .ep-group-content {
+            display: none;
+            background: var(--bg-0);
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .ep-group-btn.active {
+            background: linear-gradient(135deg, var(--amber), var(--ember));
+            color: #160a05;
+            border-color: transparent;
+        }
+
+        .no-scroll { overflow: hidden; }
+
+        h2#modalTitle{ font-family:'Poppins',sans-serif; font-size:19px; margin: 4px 0; }
     </style>
 </head>
 
-<body> 
+<body>
 
 <div class="side-overlay" onclick="toggleSideMenu()"></div>
 <div id="sideMenu">
     <div class="side-menu-close" onclick="toggleSideMenu()">&times;</div>
-    <div style="padding: 0 20px 20px 20px;">
-        <h2 style="color: #ff8c1a; border-bottom: 1px solid #444; padding-bottom: 10px;">Menu</h2>
+    <div style="padding: 0 24px 18px 24px;">
+        <h2 style="color: var(--amber); border-bottom: 1px solid var(--border); padding-bottom: 12px; font-family:'Poppins',sans-serif; font-size:19px;">Menu</h2>
     </div>
-    
+
     <div class="side-link" onclick="handleNavClick('popular', null); toggleSideMenu()">
         <i class="fas fa-star" style="color: gold;"></i> Popular Content
     </div>
-    
+
     <div class="side-link" onclick="handleNavClick('Indian Dramas', null); toggleSideMenu()">
-    <i class="fas fa-tv" style="color: #ff9800;"></i> Indian Dramas
+        <i class="fas fa-tv" style="color: #ff9800;"></i> Indian Dramas
     </div>
-    
+
     <div class="side-link" onclick="handleNavClick('Turkish Dramas', null); toggleSideMenu()">
-    <i class="fas fa-mosque" style="color: #03a9f4;"></i> Turkish Dramas
+        <i class="fas fa-mosque" style="color: #03a9f4;"></i> Turkish Dramas
     </div>
-    
-    
+
     <div class="side-link" onclick="openRequestModal(); toggleSideMenu()">
         <i class="fas fa-envelope-open-text" style="color: #00e676;"></i> Request Movie
     </div>
@@ -455,7 +517,7 @@
 <div class="header" id="pageHeader">
     <div class="header-left">
         <i class="fas fa-bars menu-btn" onclick="toggleSideMenu()"></i>
-        <h1 onclick="window.location.reload()">Pk Movies</h1> 
+        <h1 onclick="window.location.reload()">Pk Movies</h1>
     </div>
     <input type="text" id="searchBar" onkeyup="debounceFilter()" placeholder="Search...">
 </div>
@@ -475,11 +537,11 @@
 <div id="modal" class="movie-detail">
     <div class="detail-content">
         <div class="close-btn-fixed" onclick="closeDetail()">&times;</div>
-        
+
         <div id="inModalPlayerContainer">
             <div id="embedLoader" style="display:none; text-align:center; padding: 40px 0;">
-                <div class="spinner" style="width:30px; height:30px; margin-bottom: 10px;"></div>
-                <p style="font-size: 12px; color: #ff8c1a; margin:0;">Please Wait....</p>
+                <div class="spinner" style="width:28px; height:28px; margin-bottom: 10px;"></div>
+                <p style="font-size: 12px; color: var(--amber); margin:0;">Please Wait....</p>
             </div>
 
             <video id="inModalVideoPlayer" controls controlsList="" playsinline preload="metadata">
@@ -487,31 +549,31 @@
             </video>
 
             <iframe id="drivePlayer" src="" style="display:none;" allow="autoplay; fullscreen" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
-            
+
             <iframe id="embedPlayer" src="" style="display:none;" scrolling="no" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
 
             <button id="driveDownloadBtn" class="btn" style="background: #2196F3; color: white; display: none; margin-top: 5px; font-size: 12px; padding: 8px;">
                 <i class="fas fa-download"></i> Full Watch & Download
             </button>
         </div>
-        
-        <div id="playbackInfo" style="color: #00bcd4; font-size: 14px; text-align: center; margin-bottom: 15px; font-weight: bold; display: none;"></div>
-        
+
+        <div id="playbackInfo" style="color: #00d4f5; font-size: 13px; text-align: center; margin-bottom: 14px; font-weight: 700; display: none;"></div>
+
         <img id="modalImg" src="">
         <h2 id="modalTitle"></h2>
-        <div style="margin: 10px 0; color: #ffc107; font-size: 14px;">
-            <span id="modalRating"></span> | <span id="modalYear"></span>
+        <div style="margin: 8px 0 12px; color: var(--amber); font-size: 13px; font-weight:600;">
+            <span id="modalRating"></span> &nbsp;|&nbsp; <span id="modalYear"></span>
         </div>
-        <p id="modalDesc" style="font-size: 13px; color: #ccc; line-height: 1.4;"></p>
-        
-        <div id="seriesEpisodeContainer" style="display: none; margin-top: 15px;">
-             <select id="seasonSelect" onchange="displaySeasonEpisodes(this.value)" class="form-select" style="margin-bottom: 10px;"></select>
+        <p id="modalDesc" style="font-size: 13px; color: var(--text-dim); line-height: 1.55;"></p>
+
+        <div id="seriesEpisodeContainer" style="display: none; margin-top: 16px;">
+             <select id="seasonSelect" onchange="displaySeasonEpisodes(this.value)" class="form-select" style="margin-bottom: 12px;"></select>
              <div id="episodeList"></div>
         </div>
-        
+
         <div id="movieButtons">
-            <button id="playBtn" class="btn" style="background: #ff4d4d; color: white;">Play Movie</button>
-            <button id="favoriteBtn" class="btn" style="background: #e91e63; color: white;">Add to Favorites</button>
+            <button id="playBtn" class="btn" style="background: linear-gradient(135deg,#ff5b3d,#ff8c1a); color: #160a05;">Play Movie</button>
+            <button id="favoriteBtn" class="btn" style="background: linear-gradient(135deg,#ff3d77,#ff5b3d); color: #fff;">Add to Favorites</button>
             <button id="otherDownloadBtn" class="btn" style="background: #009688; color: white; display: none;">Alternative Download</button>
         </div>
     </div>
@@ -520,9 +582,9 @@
 <div id="requestModal" class="modal-overlay">
     <div class="modal-box">
         <div class="close-btn-fixed" onclick="document.getElementById('requestModal').style.display='none'">&times;</div>
-        <h2 style="color: #00e676; text-align: center;">Request Content</h2>
-        <p style="text-align: center; color: #aaa; font-size: 12px; margin-bottom: 20px;">Let us know what you want to watch!</p>
-        
+        <h2 style="color: #00e676; text-align: center; font-family:'Poppins',sans-serif;">Request Content</h2>
+        <p style="text-align: center; color: var(--text-dim); font-size: 12px; margin-bottom: 22px;">Let us know what you want to watch!</p>
+
         <div class="form-group">
             <label class="form-label">Type:</label>
             <select id="reqType" class="form-select">
@@ -530,20 +592,20 @@
                 <option value="Series">Web Series</option>
             </select>
         </div>
-        
+
         <div class="form-group">
             <label class="form-label">Name:</label>
             <input type="text" id="reqName" class="form-input" placeholder="e.g. Pathaan, Money Heist...">
         </div>
-        
-        <button class="btn" onclick="submitRequest()" style="background: #00e676; color: #000;">Send Request</button>
+
+        <button class="btn" onclick="submitRequest()" style="background: linear-gradient(135deg,#00e676,#00bfa5); color: #062a1c;">Send Request</button>
     </div>
 </div>
 
 <div id="categoriesOverlay" class="modal-overlay">
     <div class="modal-box">
         <div class="close-btn-fixed" onclick="closeCategoriesOverlay()">&times;</div>
-        <h2 style="text-align: center; color: #ff8c1a;">Select Category</h2>
+        <h2 style="text-align: center; color: var(--amber); font-family:'Poppins',sans-serif;">Select Category</h2>
         <div id="categoryListOverlay"></div>
     </div>
 </div>
@@ -585,7 +647,7 @@
     };
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
-    
+
     const grid = document.getElementById("movieGrid");
     const spinner = document.getElementById("loadingSpinner");
     const paginationControls = document.querySelector('.pagination-controls');
@@ -594,17 +656,17 @@
     const embedPlayer = document.getElementById("embedPlayer");
     const embedLoader = document.getElementById("embedLoader");
     const driveDownloadBtn = document.getElementById("driveDownloadBtn");
-    
+
     let allContent = [];
     let popularContent = [];
     let filteredMovies = [];
     let currentFilterType = 'all';
     let currentPage = 1;
-    const MOVIES_PER_PAGE = 12; // بڑی اسکرین پر موویز زیادہ ہوتی ہیں اس لیے 30 کر دیا ہے
-    
-    let currentDetailData = null; 
+    const MOVIES_PER_PAGE = 12;
+
+    let currentDetailData = null;
     let currentDetailMovieKey = null;
-    let currentPlaybackID = null; 
+    let currentPlaybackID = null;
 
     const adLinks = [
       "https://www.effectivegatecpm.com/etnvcsg5?key=8cdf22590b8d8a5148ae31d2551bbe25",
@@ -624,17 +686,17 @@
       "https://www.effectivegatecpm.com/uz50mzu3f?key=efec633d14ae4a27a4a0aa1aa41c9c7e",
       "https://www.effectivegatecpm.com/trsd2yif?key=abc53a0d90802a614242e97af96fd662",
       "https://www.effectivegatecpm.com/uyz2avfp?key=af05da8c47fc0d441624224a14c722a6"
-      ]; 
+      ];
 
     window.onload = function() {
         loadData();
-        setupVideoEvents(); 
-        setTimeout(() => { showAdPopup(null, 20); }, 10000); 
+        setupVideoEvents();
+        setTimeout(() => { showAdPopup(null, 0); }, 10000);
     };
 
     async function loadData() {
         spinner.style.display = 'block';
-        
+
         database.ref('movies').on('value', (moviesSnap) => {
             allContent = [];
             moviesSnap.forEach(child => {
@@ -646,7 +708,7 @@
             allContent.reverse();
             refreshDisplay();
         });
-        
+
         database.ref('popular_movies').on('value', (popularSnap) => {
             popularContent = [];
             popularSnap.forEach(child => {
@@ -660,7 +722,7 @@
             refreshDisplay();
         });
     }
-    
+
     function refreshDisplay() {
         setFilter(currentFilterType);
         spinner.style.display = 'none';
@@ -708,7 +770,7 @@
         const pageItems = filteredMovies.slice(start, end);
         const totalPages = Math.ceil(filteredMovies.length / MOVIES_PER_PAGE);
         if (pageItems.length === 0) {
-            grid.innerHTML = `<p style="text-align: center; grid-column: 1/-1; padding: 20px;">No content found.</p>`;
+            grid.innerHTML = `<p style="text-align: center; grid-column: 1/-1; padding: 30px; color: var(--text-dim);">No content found.</p>`;
             paginationControls.style.display = 'none';
             return;
         }
@@ -721,7 +783,7 @@
                     <span class="category-badge">${movie.category} | ${tag}</span>
                 </div>`;
         });
-        grid.innerHTML = htmlBuffer; 
+        grid.innerHTML = htmlBuffer;
         paginationControls.style.display = totalPages > 1 ? 'flex' : 'none';
         document.getElementById("prevBtn").disabled = page === 1;
         document.getElementById("nextBtn").disabled = page >= totalPages;
@@ -773,7 +835,7 @@
         drivePlayer.style.display = 'none';
         embedPlayer.style.display = 'none';
         embedLoader.style.display = 'none';
-        driveDownloadBtn.style.display = 'none'; 
+        driveDownloadBtn.style.display = 'none';
         document.getElementById("playbackInfo").style.display = 'none';
 
         updateFavBtnState(key);
@@ -781,15 +843,13 @@
 
         otherBtn.style.display = 'block';
         otherBtn.innerText = "Alternative Download";
-        // یہاں 'otherDownloadLink' وہ لنک ہے جو آپ ایڈمن پینل سے ڈالتے ہیں
         otherBtn.onclick = () => {
-        if(movie.otherDownloadLink) {
-        window.open(movie.otherDownloadLink, '_blank');
-        } else {
-        alert("Download link not available");
-        }
+            if(movie.otherDownloadLink) {
+                window.open(movie.otherDownloadLink, '_blank');
+            } else {
+                alert("Download link not available");
+            }
         };
-        
 
         if(movie.type === 'series') {
             playBtn.style.display = 'none';
@@ -830,72 +890,69 @@
     }
 
     function playVideo(url, playbackID, seriesTitle = 'Movie', season = '', episodeTitle = '') {
-    if(!url) return alert("Link is not available");
-    const container = document.getElementById("inModalPlayerContainer");
-    const infoDiv = document.getElementById("playbackInfo");
-    
-    container.style.display = 'block';
-    currentPlaybackID = playbackID; 
-    
-    videoPlayer.style.display = 'none';
-    drivePlayer.style.display = 'none';
-    embedPlayer.style.display = 'none';
-    embedLoader.style.display = 'none';
-    driveDownloadBtn.style.display = 'none';
-    
-    // --- Streamtape Link Fix ---
-    if (url.includes('streamtape.to/v/')) {
-    url = url.replace('streamtape.to/v/', 'streamtape.to/e/');
+        if(!url) return alert("Link is not available");
+        const container = document.getElementById("inModalPlayerContainer");
+        const infoDiv = document.getElementById("playbackInfo");
+
+        container.style.display = 'block';
+        currentPlaybackID = playbackID;
+
+        videoPlayer.style.display = 'none';
+        drivePlayer.style.display = 'none';
+        embedPlayer.style.display = 'none';
+        embedLoader.style.display = 'none';
+        driveDownloadBtn.style.display = 'none';
+
+        // --- Streamtape Link Fix ---
+        if (url.includes('streamtape.to/v/')) {
+            url = url.replace('streamtape.to/v/', 'streamtape.to/e/');
+        }
+
+        // --- Google Drive or Embed Players ---
+        if (url.includes('drive.google.com')) {
+            container.classList.add('drive-mode');
+            let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview');
+            videoPlayer.pause();
+            embedLoader.style.display = 'block';
+            drivePlayer.src = embedUrl;
+            drivePlayer.onload = () => { embedLoader.style.display = 'none'; drivePlayer.style.display = 'block'; };
+            driveDownloadBtn.style.display = 'block';
+            driveDownloadBtn.onclick = () => window.open(url.replace('/preview', '/view'), '_blank');
+        }
+        else if (url.includes('dailymotion.com') || url.includes('streamtape.to') || url.includes('vidmoly') || url.includes('embed')) {
+            container.classList.add('embed-mode');
+            videoPlayer.pause();
+            embedLoader.style.display = 'block';
+            embedPlayer.src = url;
+            embedPlayer.onload = () => { embedLoader.style.display = 'none'; embedPlayer.style.display = 'block'; };
+        }
+        // --- HTML5 Video Player ---
+        else {
+            container.classList.remove('drive-mode');
+            videoPlayer.style.display = 'block';
+            videoPlayer.src = url;
+            videoPlayer.load();
+
+            const savedTime = localStorage.getItem(`playback_${playbackID}`);
+
+            videoPlayer.onloadedmetadata = function() {
+                if (savedTime) {
+                    videoPlayer.currentTime = parseFloat(savedTime);
+                }
+                videoPlayer.play().catch(e => console.log("Manual play required"));
+            };
+        }
+
+        if (seriesTitle !== 'Movie' && season && episodeTitle) {
+            infoDiv.innerText = `S${season.slice(1)} - ${episodeTitle}`;
+        } else {
+            infoDiv.innerText = seriesTitle;
+        }
+        infoDiv.style.display = 'block';
+        document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
     }
-    
-    // --- Google Drive or Embed Players (In ko nahi cheda gaya) ---
-    if (url.includes('drive.google.com')) {
-    container.classList.add('drive-mode');
-    let embedUrl = url.replace('/view', '/preview').replace('/edit', '/preview');
-    videoPlayer.pause();
-    embedLoader.style.display = 'block';
-    drivePlayer.src = embedUrl;
-    drivePlayer.onload = () => { embedLoader.style.display = 'none'; drivePlayer.style.display = 'block'; };
-    driveDownloadBtn.style.display = 'block';
-    driveDownloadBtn.onclick = () => window.open(url.replace('/preview', '/view'), '_blank');
-    } 
-    else if (url.includes('dailymotion.com') || url.includes('streamtape.to') || url.includes('vidmoly') || url.includes('embed')) {
-    container.classList.add('embed-mode');
-    videoPlayer.pause();
-    embedLoader.style.display = 'block';
-    embedPlayer.src = url; 
-    embedPlayer.onload = () => { embedLoader.style.display = 'none'; embedPlayer.style.display = 'block'; };
-    } 
-    // --- HTML5 Video Player (Resume logic yahan hai) ---
-    else {
-    container.classList.remove('drive-mode');
-    videoPlayer.style.display = 'block';
-    videoPlayer.src = url;
-    videoPlayer.load();
-    
-    // 1. لوکل اسٹوریج سے ٹائم نکالنا
-    const savedTime = localStorage.getItem(`playback_${playbackID}`);
-    
-    videoPlayer.onloadedmetadata = function() {
-    // 2. اگر پہلے سے ٹائم موجود ہے تو وہاں پہنچا دو
-    if (savedTime) {
-    videoPlayer.currentTime = parseFloat(savedTime);
-    }
-    videoPlayer.play().catch(e => console.log("Manual play required"));
-    };
-    }
-    
-    
-    if (seriesTitle !== 'Movie' && season && episodeTitle) {
-    infoDiv.innerText = `S${season.slice(1)} - ${episodeTitle}`;
-    } else {
-    infoDiv.innerText = seriesTitle;
-    }
-    infoDiv.style.display = 'block';
-    document.getElementById("modal").scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    
-    
+
+
     function setupVideoEvents() {
         let saveTimeout;
         videoPlayer.ontimeupdate = function() {
@@ -915,86 +972,79 @@
     }
 
     function displaySeasonEpisodes(season) {
-    const list = document.getElementById("episodeList");
-    list.innerHTML = `<div style="text-align: center; padding: 20px;"><div class="spinner" style="width:30px;height:30px;border-width:3px;"></div></div>`;
-    
-    setTimeout(() => {
-        list.innerHTML = ''; 
-        if(!currentDetailData.episodes || !currentDetailData.episodes[season]) {
-            list.innerHTML = '<p style="color:#888; text-align:center;">No episodes added yet.</p>';
-            return;
-        }
+        const list = document.getElementById("episodeList");
+        list.innerHTML = `<div style="text-align: center; padding: 24px;"><div class="spinner" style="width:28px;height:28px;border-width:3px;"></div></div>`;
 
-        const eps = currentDetailData.episodes[season];
-        const seriesTitle = currentDetailData.title.replace(/'/g, "\\'");
-        const epKeys = Object.keys(eps).sort((a,b) => parseInt(a.slice(3)) - parseInt(b.slice(3)));
-        const totalEpisodes = epKeys.length;
-
-        // اب یہ چیک کرے گا کہ اگر ایپیسوڈ 12 یا اس سے کم ہیں تو سادہ لسٹ دکھائے
-        if (totalEpisodes <= 12) {
-            renderEpisodeItems(list, epKeys, eps, season, seriesTitle);
-        } 
-        // اگر 12 سے زیادہ ہیں تو 12-12 کی گروپنگ کرے گا
-        else {
-            for (let i = 0; i < totalEpisodes; i += 12) {
-                const rangeKeys = epKeys.slice(i, i + 12);
-                const startNum = i + 1;
-                const endNum = Math.min(i + 12, totalEpisodes);
-                
-                // گروپ بٹن (مثال: Episode 01-12)
-                const groupBtn = document.createElement("button");
-                groupBtn.className = "ep-group-btn";
-                groupBtn.innerHTML = `<span>Episode ${startNum < 10 ? '0'+startNum : startNum}-${endNum < 10 ? '0'+endNum : endNum}</span> <i class="fas fa-chevron-down"></i>`;
-                
-                // گروپ کنٹینر
-                const groupContent = document.createElement("div");
-                groupContent.className = "ep-group-content";
-                groupContent.style.display = "none"; 
-                
-                renderEpisodeItems(groupContent, rangeKeys, eps, season, seriesTitle);
-                
-                // اٹو کلوز فنکشنلٹی
-                groupBtn.onclick = function() {
-                    const isOpen = this.nextElementSibling.style.display === "block";
-
-                    // پہلے سے کھلے ہوئے تمام گروپس کو بند کریں
-                    document.querySelectorAll('.ep-group-content').forEach(el => el.style.display = 'none');
-                    document.querySelectorAll('.ep-group-btn').forEach(el => {
-                        el.classList.remove('active');
-                        el.querySelector('i').className = 'fas fa-chevron-down';
-                    });
-
-                    // صرف موجودہ گروپ کو کھولیں اگر وہ پہلے سے بند تھا
-                    if (!isOpen) {
-                        this.classList.add("active");
-                        this.nextElementSibling.style.display = "block";
-                        this.querySelector("i").className = 'fas fa-chevron-up';
-                    }
-                };
-
-                list.appendChild(groupBtn);
-                list.appendChild(groupContent);
+        setTimeout(() => {
+            list.innerHTML = '';
+            if(!currentDetailData.episodes || !currentDetailData.episodes[season]) {
+                list.innerHTML = '<p style="color:#888; text-align:center;">No episodes added yet.</p>';
+                return;
             }
-        }
-    }, 800);
-}
 
-// ایپیسوڈز رینڈر کرنے کا فنکشن
-function renderEpisodeItems(container, keys, eps, season, seriesTitle) {
-    keys.forEach(key => {
-        const ep = eps[key];
-        const playbackID = `${currentDetailMovieKey}_${season}_${key}`;
-        container.innerHTML += `<div class="episode-item">
-            <span>${ep.title}</span>
-            <div class="ep-actions">
-                <button class="ep-play" onclick="playVideo('${ep.link}', '${playbackID}', '${seriesTitle}', '${season}', '${ep.title.replace(/'/g, "\\ text-align: left;")}')">Play</button>
-                <button class="ep-down" onclick="window.open('${ep.link}', '_blank')">Download</button>
-       </div>
-        </div>`;
-    });
-}
+            const eps = currentDetailData.episodes[season];
+            const seriesTitle = currentDetailData.title.replace(/'/g, "\\'");
+            const epKeys = Object.keys(eps).sort((a,b) => parseInt(a.slice(3)) - parseInt(b.slice(3)));
+            const totalEpisodes = epKeys.length;
 
-    
+            if (totalEpisodes <= 12) {
+                renderEpisodeItems(list, epKeys, eps, season, seriesTitle);
+            }
+            else {
+                for (let i = 0; i < totalEpisodes; i += 12) {
+                    const rangeKeys = epKeys.slice(i, i + 12);
+                    const startNum = i + 1;
+                    const endNum = Math.min(i + 12, totalEpisodes);
+
+                    const groupBtn = document.createElement("button");
+                    groupBtn.className = "ep-group-btn";
+                    groupBtn.innerHTML = `<span>Episode ${startNum < 10 ? '0'+startNum : startNum}-${endNum < 10 ? '0'+endNum : endNum}</span> <i class="fas fa-chevron-down"></i>`;
+
+                    const groupContent = document.createElement("div");
+                    groupContent.className = "ep-group-content";
+                    groupContent.style.display = "none";
+
+                    renderEpisodeItems(groupContent, rangeKeys, eps, season, seriesTitle);
+
+                    groupBtn.onclick = function() {
+                        const isOpen = this.nextElementSibling.style.display === "block";
+
+                        document.querySelectorAll('.ep-group-content').forEach(el => el.style.display = 'none');
+                        document.querySelectorAll('.ep-group-btn').forEach(el => {
+                            el.classList.remove('active');
+                            el.querySelector('i').className = 'fas fa-chevron-down';
+                        });
+
+                        if (!isOpen) {
+                            this.classList.add("active");
+                            this.nextElementSibling.style.display = "block";
+                            this.querySelector("i").className = 'fas fa-chevron-up';
+                        }
+                    };
+
+                    list.appendChild(groupBtn);
+                    list.appendChild(groupContent);
+                }
+            }
+        }, 800);
+    }
+
+    // ایپیسوڈز رینڈر کرنے کا فنکشن
+    function renderEpisodeItems(container, keys, eps, season, seriesTitle) {
+        keys.forEach(key => {
+            const ep = eps[key];
+            const playbackID = `${currentDetailMovieKey}_${season}_${key}`;
+            container.innerHTML += `<div class="episode-item">
+                <span>${ep.title}</span>
+                <div class="ep-actions">
+                    <button class="ep-play" onclick="playVideo('${ep.link}', '${playbackID}', '${seriesTitle}', '${season}', '${ep.title.replace(/'/g, "\\ text-align: left;")}')">Play</button>
+                    <button class="ep-down" onclick="window.open('${ep.link}', '_blank')">Download</button>
+           </div>
+            </div>`;
+        });
+    }
+
+
 
     function toggleSideMenu() {
         document.getElementById("sideMenu").classList.toggle("active");
@@ -1024,7 +1074,7 @@ function renderEpisodeItems(container, keys, eps, season, seriesTitle) {
         const favs = JSON.parse(localStorage.getItem('favs') || '[]');
         const btn = document.getElementById("favoriteBtn");
         btn.innerText = favs.includes(key) ? "Saved to Favorites" : "Add to Favorites";
-        btn.style.background = favs.includes(key) ? "#4caf50" : "#e91e63";
+        btn.style.background = favs.includes(key) ? "linear-gradient(135deg,#33d17a,#1fae5e)" : "linear-gradient(135deg,#ff3d77,#ff5b3d)";
     }
 
     function showCategoriesOverlay() {
@@ -1041,29 +1091,29 @@ function renderEpisodeItems(container, keys, eps, season, seriesTitle) {
             });
         });
     }
-    
+
     function closeCategoriesOverlay() { document.getElementById("categoriesOverlay").style.display = 'none'; }
 
     function showAdPopup(url, time, redirectUrl = null) {
         const adDiv = document.getElementById("adPopup");
         const iframe = document.getElementById("adIframe");
         const timerEl = document.getElementById("adTimer");
-        
+
         let finalAdUrl = (url && url.length > 5) ? url : adLinks[Math.floor(Math.random() * adLinks.length)];
 
         adDiv.style.display = 'flex';
         iframe.src = finalAdUrl;
-        
+
         let timeLeft = time;
         timerEl.innerText = timeLeft;
-        
+
         const interval = setInterval(() => {
             timeLeft--;
             timerEl.innerText = timeLeft;
             if(timeLeft <= 0) {
                 clearInterval(interval);
                 adDiv.style.display = 'none';
-                iframe.src = ''; 
+                iframe.src = '';
                 if(redirectUrl) {
                     window.open(redirectUrl, '_blank');
                 }
