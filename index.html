@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0a0a12">
+    <meta name="description" content="Pk Movies - watch and download movies and series.">
     <title>Pk Movies</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -481,11 +483,17 @@
         .no-scroll { overflow: hidden; }
 
         h2#modalTitle{ font-family:'Poppins',sans-serif; font-size:19px; margin: 4px 0; }
+    
+        /* --- performance & polish --- */
+        *{ -webkit-backdrop-filter:none!important; backdrop-filter:none!important; }
+        .offline-bar{ display:none; position:fixed; top:0; left:0; right:0; z-index:99999; background:#ef4444; color:#fff; text-align:center; font-size:12px; padding:6px; }
+        @media (prefers-reduced-motion: reduce){ *{ animation:none!important; transition:none!important; } }
     </style>
 </head>
 
 <body>
 
+<div id="offlineBar" class="offline-bar">No internet connection</div>
 <div class="side-overlay" onclick="toggleSideMenu()"></div>
 <div id="sideMenu">
     <div class="side-menu-close" onclick="toggleSideMenu()">&times;</div>
@@ -545,12 +553,12 @@
             </div>
 
             <video id="inModalVideoPlayer" controls controlsList="" playsinline preload="metadata">
-                <source id="inModalVideoSource" src="">
+                
             </video>
 
-            <iframe id="drivePlayer" src="" style="display:none;" allow="autoplay; fullscreen" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+            <iframe id="drivePlayer" sandbox="allow-scripts allow-same-origin allow-presentation" src="" style="display:none;" allow="autoplay; fullscreen" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
 
-            <iframe id="embedPlayer" src="" style="display:none;" scrolling="no" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+            <iframe id="embedPlayer" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" src="" style="display:none;" scrolling="no" frameborder="0" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
 
             <button id="driveDownloadBtn" class="btn" style="background: #2196F3; color: white; display: none; margin-top: 5px; font-size: 12px; padding: 8px;">
                 <i class="fas fa-download"></i> Full Watch & Download
@@ -575,6 +583,7 @@
             <button id="playBtn" class="btn" style="background: linear-gradient(135deg,#ff5b3d,#ff8c1a); color: #160a05;">Play Movie</button>
             <button id="favoriteBtn" class="btn" style="background: linear-gradient(135deg,#ff3d77,#ff5b3d); color: #fff;">Add to Favorites</button>
             <button id="otherDownloadBtn" class="btn" style="background: #009688; color: white; display: none;">Alternative Download</button>
+            <button class="btn" style="background: #475569; color: white;" onclick="reportBroken()">Report Broken Link</button>
         </div>
     </div>
 </div>
@@ -668,6 +677,45 @@
     let currentDetailMovieKey = null;
     let currentPlaybackID = null;
 
+    // ---- helpers ----
+    const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    // popular list holds copies of originals; hide the copies so nothing shows twice
+    function getAll() {
+        const keys = new Set(allContent.map(m => m.key));
+        return [...allContent, ...popularContent.filter(p => !p.originalKey || !keys.has(p.originalKey))];
+    }
+    // fully release the media so memory is freed (src='' does NOT do this)
+    function stopMedia() {
+        try { videoPlayer.pause(); } catch(e) {}
+        videoPlayer.onloadedmetadata = null;
+        videoPlayer.removeAttribute('src');
+        videoPlayer.load();
+        drivePlayer.onload = null; embedPlayer.onload = null;
+        drivePlayer.src = 'about:blank'; embedPlayer.src = 'about:blank';
+    }
+    function showPlayerError() {
+        const i = document.getElementById("playbackInfo");
+        i.innerText = "Video failed to load. Try Alternative Download or Report Broken Link.";
+        i.style.display = 'block';
+    }
+    function reportBroken() {
+        if (!currentDetailData) return;
+        database.ref('messages').push({ message: 'Broken link: ' + currentDetailData.title + (currentPlaybackID ? ' (' + currentPlaybackID + ')' : ''), time: Date.now() });
+        alert("Thanks! We will fix it soon.");
+    }
+    function setupExtras() {
+        const bar = document.getElementById('offlineBar');
+        const upd = () => { bar.style.display = navigator.onLine ? 'none' : 'block'; };
+        window.addEventListener('online', upd); window.addEventListener('offline', upd); upd();
+        window.addEventListener('popstate', () => {
+            if (document.getElementById('modal').style.display === 'block') closeDetail();
+        });
+        // ads only when NOT watching
+        const adGate = () => { if (!currentPlaybackID && document.getElementById('modal').style.display !== 'block') showAdPopup(null, 0); };
+        setTimeout(adGate, 10000);
+        setInterval(adGate, 300000);
+    }
+
     const adLinks = [
       "https://www.effectivegatecpm.com/etnvcsg5?key=8cdf22590b8d8a5148ae31d2551bbe25",
       "https://www.effectivegatecpm.com/fgjvc6xp?key=02a55463acca337410ce3bf28d4c13fa",
@@ -691,13 +739,13 @@
     window.onload = function() {
         loadData();
         setupVideoEvents();
-        setTimeout(() => { showAdPopup(null, 0); }, 10000);
+        setupExtras();
     };
 
     async function loadData() {
         spinner.style.display = 'block';
 
-        database.ref('movies').on('value', (moviesSnap) => {
+        database.ref('movies').once('value').then((moviesSnap) => {
             allContent = [];
             moviesSnap.forEach(child => {
                 let val = child.val();
@@ -709,7 +757,7 @@
             refreshDisplay();
         });
 
-        database.ref('popular_movies').on('value', (popularSnap) => {
+        database.ref('popular_movies').once('value').then((popularSnap) => {
             popularContent = [];
             popularSnap.forEach(child => {
                 let val = child.val();
@@ -747,7 +795,7 @@
     function setFilter(filter) {
         currentFilterType = filter;
         if (filter === 'all') {
-            filteredMovies = [...allContent, ...popularContent];
+            filteredMovies = getAll();
         } else if (filter === 'movie') {
             filteredMovies = allContent.filter(m => m.type === 'movie');
         } else if (filter === 'series') {
@@ -758,7 +806,7 @@
             const favKeys = JSON.parse(localStorage.getItem('favs') || '[]');
             filteredMovies = [...allContent, ...popularContent].filter(m => favKeys.includes(m.key));
         } else {
-            filteredMovies = [...allContent, ...popularContent].filter(m => m.category === filter);
+            filteredMovies = getAll().filter(m => m.category === filter);
         }
         currentPage = 1;
         renderPage(currentPage);
@@ -778,9 +826,9 @@
         pageItems.forEach(movie => {
             const tag = movie.isPopular ? 'Popular' : (movie.type === 'series' ? 'Series' : 'Movie');
             htmlBuffer += `<div class="movie-card" onclick="openDetail('${movie.key}')">
-                    <img src="${movie.img}" loading="lazy" alt="${movie.title}">
-                    <p>${movie.title}</p>
-                    <span class="category-badge">${movie.category} | ${tag}</span>
+                    <img src="${esc(movie.img)}" loading="lazy" decoding="async" alt="${esc(movie.title)}" onerror="this.style.opacity=.2">
+                    <p>${esc(movie.title)}</p>
+                    <span class="category-badge">${esc(movie.category)} | ${tag}</span>
                 </div>`;
         });
         grid.innerHTML = htmlBuffer;
@@ -801,7 +849,7 @@
         searchTimeout = setTimeout(() => {
             const q = document.getElementById("searchBar").value.toUpperCase();
             if(!q) return setFilter('all');
-            filteredMovies = [...allContent, ...popularContent].filter(m => m.title.toUpperCase().includes(q));
+            filteredMovies = getAll().filter(m => m.title.toUpperCase().includes(q));
             currentPage = 1;
             renderPage(1);
         }, 500);
@@ -827,10 +875,7 @@
         const favBtn = document.getElementById("favoriteBtn");
 
         playerContainer.style.display = 'none';
-        videoPlayer.pause();
-        videoPlayer.src = '';
-        drivePlayer.src = '';
-        embedPlayer.src = '';
+        stopMedia();
         videoPlayer.style.display = 'none';
         drivePlayer.style.display = 'none';
         embedPlayer.style.display = 'none';
@@ -870,6 +915,7 @@
             playBtn.onclick = () => playVideo(movie.play, key, movie.title);
         }
         document.getElementById("modal").style.display = "block";
+        if (!(history.state && history.state.m === 1)) history.pushState({ m: 1 }, '');
         document.body.classList.add("no-scroll");
     }
 
@@ -878,15 +924,12 @@
         if (currentPlaybackID && !videoPlayer.ended && videoPlayer.currentTime > 0) {
             localStorage.setItem(`playback_${currentPlaybackID}`, videoPlayer.currentTime.toString());
         }
-        videoPlayer.pause();
-        videoPlayer.src = '';
-        drivePlayer.src = '';
-        embedPlayer.src = '';
+        stopMedia();
         embedLoader.style.display = 'none';
         document.getElementById("inModalPlayerContainer").style.display = 'none';
-        currentPlaybackID = null;
-        modal.style.display = "none";
-        document.body.classList.remove("no-scroll");
+        currentPlaybackID = null; modal.style.display = "none"; document.body.classList.remove("no-scroll");
+        database.goOnline();
+        if (history.state && history.state.m === 1) history.back();
     }
 
     function playVideo(url, playbackID, seriesTitle = 'Movie', season = '', episodeTitle = '') {
@@ -895,7 +938,10 @@
         const infoDiv = document.getElementById("playbackInfo");
 
         container.style.display = 'block';
+        stopMedia();
         currentPlaybackID = playbackID;
+        database.goOffline(); // stop the live Firebase socket while a movie plays
+        container.classList.remove('drive-mode', 'embed-mode');
 
         videoPlayer.style.display = 'none';
         drivePlayer.style.display = 'none';
@@ -954,14 +1000,14 @@
 
 
     function setupVideoEvents() {
-        let saveTimeout;
+        let lastSave = 0;
+        videoPlayer.onerror = () => { if (videoPlayer.getAttribute('src')) showPlayerError(); };
         videoPlayer.ontimeupdate = function() {
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => {
+            const now = Date.now(); if (now - lastSave < 5000) return; lastSave = now; (() => {
                 if (currentPlaybackID && !videoPlayer.paused && !videoPlayer.ended && videoPlayer.currentTime > 5) {
                     localStorage.setItem(`playback_${currentPlaybackID}`, videoPlayer.currentTime.toString());
                 }
-            }, 2000);
+            })();
         };
         videoPlayer.onpause = () => {
             if (currentPlaybackID && !videoPlayer.ended) localStorage.setItem(`playback_${currentPlaybackID}`, videoPlayer.currentTime.toString());
@@ -1030,18 +1076,21 @@
     }
 
     // ایپیسوڈز رینڈر کرنے کا فنکشن
-    function renderEpisodeItems(container, keys, eps, season, seriesTitle) {
+    function renderEpisodeItems(container, keys, eps, season) {
+        const frag = document.createDocumentFragment();
         keys.forEach(key => {
             const ep = eps[key];
             const playbackID = `${currentDetailMovieKey}_${season}_${key}`;
-            container.innerHTML += `<div class="episode-item">
-                <span>${ep.title}</span>
-                <div class="ep-actions">
-                    <button class="ep-play" onclick="playVideo('${ep.link}', '${playbackID}', '${seriesTitle}', '${season}', '${ep.title.replace(/'/g, "\\ text-align: left;")}')">Play</button>
-                    <button class="ep-down" onclick="window.open('${ep.link}', '_blank')">Download</button>
-           </div>
-            </div>`;
+            const row = document.createElement('div'); row.className = 'episode-item';
+            const t = document.createElement('span'); t.textContent = ep.title;
+            const acts = document.createElement('div'); acts.className = 'ep-actions';
+            const p = document.createElement('button'); p.className = 'ep-play'; p.textContent = 'Play';
+            p.onclick = () => playVideo(ep.link, playbackID, currentDetailData.title, season, ep.title);
+            const d = document.createElement('button'); d.className = 'ep-down'; d.textContent = 'Download';
+            d.onclick = () => window.open(ep.link, '_blank');
+            acts.append(p, d); row.append(t, acts); frag.appendChild(row);
         });
+        container.appendChild(frag);
     }
 
 
