@@ -1,0 +1,238 @@
+
+name: Build PK Movies Web App APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/android-webapp.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+
+      - name: Configure App
+        shell: bash
+        run: |
+          echo "APP_NAME=PK MOVIES" >> $GITHUB_ENV
+          echo "APP_ID=pk.movies.viewer.web" >> $GITHUB_ENV
+          echo "APP_URL=https://movieshub32.github.io/Pk-Movies/" >> $GITHUB_ENV
+          echo "ARTIFACT_NAME=PK-MOVIES-VIEWER-APK" >> $GITHUB_ENV
+
+      - name: Create Android Project
+        shell: bash
+        run: |
+          mkdir -p app/src/main/java/com/pkmovies/webapp
+          mkdir -p app/src/main/res/drawable
+          mkdir -p app/src/main/res/values
+
+          cat > settings.gradle <<'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "PKMoviesWebApp"
+          include ':app'
+          EOF
+
+          cat > build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application' version '8.5.2' apply false
+          }
+          EOF
+
+          cat > app/build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application'
+          }
+
+          android {
+              namespace 'com.pkmovies.webapp'
+              compileSdk 35
+
+              defaultConfig {
+                  applicationId "pk.movies.viewer.web"
+                  minSdk 23
+                  targetSdk 28
+                  versionCode 1
+                  versionName "1.0"
+              }
+          }
+          EOF
+
+          cat > app/src/main/res/values/strings.xml <<EOF
+          <resources>
+              <string name="app_name">${APP_NAME}</string>
+          </resources>
+          EOF
+
+          cat > app/src/main/res/values/styles.xml <<'EOF'
+          <resources>
+              <style name="AppTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
+                  <item name="android:fontFamily">sans</item>
+                  <item name="android:colorAccent">#D6AD43</item>
+                  <item name="android:statusBarColor">#101522</item>
+                  <item name="android:navigationBarColor">#101522</item>
+                  <item name="android:windowLightStatusBar">false</item>
+              </style>
+          </resources>
+          EOF
+
+          cat > app/src/main/res/drawable/ic_launcher.xml <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp"
+              android:height="108dp"
+              android:viewportWidth="108"
+              android:viewportHeight="108">
+              <path android:fillColor="#101522" android:pathData="M0,0h108v108h-108z"/>
+              <path android:fillColor="#D6AD43" android:pathData="M19,28h70v52h-70z"/>
+              <path android:fillColor="#101522" android:pathData="M27,36h54v36h-54z"/>
+              <path android:fillColor="#D6AD43" android:pathData="M31,17h16v11h-16zM61,17h16v11h-16zM31,80h16v11h-16zM61,80h16v11h-16z"/>
+              <path android:fillColor="#D6AD43" android:pathData="M42,42l26,12 -26,12z"/>
+          </vector>
+          EOF
+
+          cat > app/src/main/AndroidManifest.xml <<'EOF'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET"/>
+
+              <application
+                  android:label="@string/app_name"
+                  android:icon="@drawable/ic_launcher"
+                  android:roundIcon="@drawable/ic_launcher"
+                  android:theme="@style/AppTheme"
+                  android:usesCleartextTraffic="false"
+                  android:hardwareAccelerated="true">
+
+                  <activity
+                      android:name=".MainActivity"
+                      android:configChanges="orientation|screenSize|keyboardHidden"
+                      android:exported="true">
+
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN"/>
+                          <category android:name="android.intent.category.LAUNCHER"/>
+                      </intent-filter>
+
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          cat > app/src/main/java/com/pkmovies/webapp/MainActivity.java <<EOF
+          package com.pkmovies.webapp;
+
+          import android.app.Activity;
+          import android.app.AlertDialog;
+          import android.os.Bundle;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebSettings;
+          import android.graphics.Color;
+
+          public class MainActivity extends Activity {
+
+              private WebView webView;
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  getWindow().setStatusBarColor(Color.rgb(16,21,34));
+                  getWindow().setNavigationBarColor(Color.rgb(16,21,34));
+
+                  webView = new WebView(this);
+                  webView.setBackgroundColor(Color.rgb(16,21,34));
+
+                  WebSettings settings = webView.getSettings();
+                  settings.setJavaScriptEnabled(true);
+                  settings.setDomStorageEnabled(true);
+                  settings.setDatabaseEnabled(true);
+                  settings.setLoadsImagesAutomatically(true);
+                  settings.setMediaPlaybackRequiresUserGesture(false);
+                  settings.setSupportZoom(false);
+                  settings.setBuiltInZoomControls(false);
+                  settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+
+                  webView.setWebViewClient(new WebViewClient());
+                  webView.setWebChromeClient(new WebChromeClient());
+
+                  setContentView(webView);
+
+                  if (savedInstanceState != null) {
+                      webView.restoreState(savedInstanceState);
+                  } else {
+                      webView.loadUrl("${APP_URL}");
+                  }
+              }
+
+              @Override
+              public void onBackPressed() {
+                  if (webView != null && webView.canGoBack()) {
+                      webView.goBack();
+                  } else {
+                      new AlertDialog.Builder(this)
+                          .setTitle("Exit PK MOVIES?")
+                          .setMessage("Do you want to exit the app?")
+                          .setPositiveButton("YES", (dialog, which) -> finish())
+                          .setNegativeButton("NO", (dialog, which) -> dialog.dismiss())
+                          .setCancelable(true)
+                          .show();
+                  }
+              }
+
+              @Override
+              protected void onSaveInstanceState(Bundle outState) {
+                  if (webView != null) {
+                      webView.saveState(outState);
+                  }
+                  super.onSaveInstanceState(outState);
+              }
+
+              @Override
+              protected void onDestroy() {
+                  if (webView != null) {
+                      webView.stopLoading();
+                      webView.destroy();
+                  }
+                  super.onDestroy();
+              }
+          }
+          EOF
+
+      - name: Build APK
+        run: gradle assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PK-MOVIES-VIEWER-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
