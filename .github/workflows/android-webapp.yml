@@ -1,4 +1,3 @@
-
 name: Build PK Movies Viewer APK
 
 on:
@@ -18,16 +17,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v4
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.7
 
-      - name: Create Android App
+      - name: Create Android Project
         shell: bash
         run: |
           test -f icon.png || (echo "Repository root mein icon.png upload karein" && exit 1)
@@ -40,7 +41,7 @@ jobs:
             cp icon.png app/src/main/res/mipmap-$d/ic_launcher.png
           done
 
-          cat > settings.gradle <<'EOF'
+          cat > settings.gradle <<'EOF2'
           pluginManagement {
               repositories {
                   google()
@@ -57,15 +58,15 @@ jobs:
           }
           rootProject.name = "PKMoviesViewer"
           include ':app'
-          EOF
+          EOF2
 
-          cat > build.gradle <<'EOF'
+          cat > build.gradle <<'EOF2'
           plugins {
               id 'com.android.application' version '8.5.2' apply false
           }
-          EOF
+          EOF2
 
-          cat > app/build.gradle <<'EOF'
+          cat > app/build.gradle <<'EOF2'
           plugins {
               id 'com.android.application'
           }
@@ -78,19 +79,19 @@ jobs:
                   applicationId "pk.movies.viewer.web"
                   minSdk 23
                   targetSdk 28
-                  versionCode 2
-                  versionName "1.1"
+                  versionCode 3
+                  versionName "1.2"
               }
           }
-          EOF
+          EOF2
 
-          cat > app/src/main/res/values/strings.xml <<'EOF'
+          cat > app/src/main/res/values/strings.xml <<'EOF2'
           <resources>
               <string name="app_name">PK MOVIES</string>
           </resources>
-          EOF
+          EOF2
 
-          cat > app/src/main/res/values/styles.xml <<'EOF'
+          cat > app/src/main/res/values/styles.xml <<'EOF2'
           <resources>
               <style name="AppTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
                   <item name="android:fontFamily">sans</item>
@@ -100,9 +101,9 @@ jobs:
                   <item name="android:windowLightStatusBar">false</item>
           </style>
           </resources>
-          EOF
+          EOF2
 
-          cat > app/src/main/AndroidManifest.xml <<'EOF'
+          cat > app/src/main/AndroidManifest.xml <<'EOF2'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET"/>
               <application
@@ -122,22 +123,31 @@ jobs:
                   </activity>
               </application>
           </manifest>
-          EOF
+          EOF2
 
-          cat > app/src/main/java/com/pkmovies/webapp/MainActivity.java <<'EOF'
+          cat > app/src/main/java/com/pkmovies/webapp/MainActivity.java <<'EOF2'
           package com.pkmovies.webapp;
 
           import android.app.Activity;
           import android.app.AlertDialog;
+          import android.content.pm.ActivityInfo;
+          import android.graphics.Color;
           import android.os.Bundle;
-          import android.webkit.WebView;
-          import android.webkit.WebViewClient;
+          import android.view.View;
+          import android.view.Window;
+          import android.view.WindowManager;
           import android.webkit.WebChromeClient;
           import android.webkit.WebSettings;
-          import android.graphics.Color;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.widget.FrameLayout;
 
           public class MainActivity extends Activity {
               private WebView webView;
+              private FrameLayout fullscreenContainer;
+              private View fullscreenView;
+              private WebChromeClient.CustomViewCallback fullscreenCallback;
+              private int previousOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 
               @Override
               protected void onCreate(Bundle savedInstanceState) {
@@ -145,6 +155,8 @@ jobs:
                   getWindow().setStatusBarColor(Color.rgb(16,21,34));
                   getWindow().setNavigationBarColor(Color.rgb(16,21,34));
 
+                  fullscreenContainer = new FrameLayout(this);
+                  fullscreenContainer.setBackgroundColor(Color.BLACK);
                   webView = new WebView(this);
                   webView.setBackgroundColor(Color.rgb(16,21,34));
 
@@ -158,9 +170,44 @@ jobs:
                   s.setBuiltInZoomControls(false);
 
                   webView.setWebViewClient(new WebViewClient());
-                  webView.setWebChromeClient(new WebChromeClient());
-                  setContentView(webView);
+                  webView.setWebChromeClient(new WebChromeClient() {
+                      @Override
+                      public void onShowCustomView(View view, CustomViewCallback callback) {
+                          if (fullscreenView != null) {
+                              callback.onCustomViewHidden();
+                              return;
+                          }
+                          fullscreenView = view;
+                          fullscreenCallback = callback;
+                          previousOrientation = getRequestedOrientation();
 
+                          webView.setVisibility(View.GONE);
+                          fullscreenContainer.addView(view, new FrameLayout.LayoutParams(
+                              FrameLayout.LayoutParams.MATCH_PARENT,
+                              FrameLayout.LayoutParams.MATCH_PARENT
+                          ));
+                          setContentView(fullscreenContainer);
+
+                          setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+                          Window w = getWindow();
+                          w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                          w.getDecorView().setSystemUiVisibility(
+                              View.SYSTEM_UI_FLAG_FULLSCREEN
+                              | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                              | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                              | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                              | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                              | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                          );
+                      }
+
+                      @Override
+                      public void onHideCustomView() {
+                          exitFullscreen();
+                      }
+                  });
+
+                  setContentView(webView);
                   if (savedInstanceState != null) {
                       webView.restoreState(savedInstanceState);
                   } else {
@@ -168,16 +215,33 @@ jobs:
                   }
               }
 
+              private void exitFullscreen() {
+                  if (fullscreenView == null) return;
+                  fullscreenContainer.removeView(fullscreenView);
+                  fullscreenView = null;
+                  if (fullscreenCallback != null) {
+                      fullscreenCallback.onCustomViewHidden();
+                      fullscreenCallback = null;
+                  }
+                  getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                  getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                  setRequestedOrientation(previousOrientation);
+                  setContentView(webView);
+                  webView.setVisibility(View.VISIBLE);
+              }
+
               @Override
               public void onBackPressed() {
-                  if (webView != null && webView.canGoBack()) {
+                  if (fullscreenView != null) {
+                      exitFullscreen();
+                  } else if (webView != null && webView.canGoBack()) {
                       webView.goBack();
                   } else {
                       new AlertDialog.Builder(this)
                           .setTitle("Exit PK MOVIES?")
                           .setMessage("Do you want to exit the app?")
-                          .setPositiveButton("YES", (d,w) -> finish())
-                          .setNegativeButton("NO", (d,w) -> d.dismiss())
+                          .setPositiveButton("YES", (dialog, which) -> finish())
+                          .setNegativeButton("NO", (dialog, which) -> dialog.dismiss())
                           .show();
                   }
               }
@@ -197,7 +261,7 @@ jobs:
                   super.onDestroy();
               }
           }
-          EOF
+          EOF2
 
       - name: Build APK
         run: gradle assembleDebug
@@ -207,4 +271,5 @@ jobs:
         with:
           name: PK-MOVIES-VIEWER-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
           retention-days: 14
