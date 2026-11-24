@@ -729,6 +729,12 @@
         const item={id:Date.now().toString(),name:guessed,url,status:'Queued',progress:0};
         downloadQueue.unshift(item); saveDownloadQueue(); renderDownloadQueue(); document.getElementById('dlUrl').value=''; document.getElementById('dlName').value=''; startDirectDownload(item.id);
     }
+    function queueDownload(url,name){
+        if(!url || !/^https?:\/\//i.test(String(url))){ alert('Valid direct download link not available.'); return; }
+        const cleanName=String(name||'download').replace(/[\\/:*?\"<>|]/g,'_').trim() || 'download';
+        const item={id:Date.now().toString()+Math.random().toString(36).slice(2,6),name:cleanName,url:String(url),status:'Queued',progress:0};
+        downloadQueue.unshift(item); saveDownloadQueue(); renderDownloadQueue(); startDirectDownload(item.id); openDownloads();
+    }
     function renderDownloadQueue(){
         const box=document.getElementById('downloadQueue'); if(!box) return;
         if(!downloadQueue.length){box.innerHTML='<p style="text-align:center;color:var(--text-dim);">No downloads yet.</p>';return;}
@@ -1123,7 +1129,7 @@
         otherBtn.onclick = () => {
             if(movie.otherDownloadLink) {
                 // random direct ad first (same way as the start-up ad), then the link opens
-                showAdPopup(null, 0, movie.otherDownloadLink);
+                queueDownload(movie.otherDownloadLink, movie.title + '.mp4');
             } else {
                 alert("Download link not available");
             }
@@ -1448,7 +1454,7 @@
             const p = document.createElement('button'); p.className = 'ep-play'; p.textContent = 'Play';
             p.onclick = () => playVideo(ep.link, playbackID, currentDetailData.title, season, ep.title);
             const d = document.createElement('button'); d.className = 'ep-down'; d.textContent = 'Download';
-            d.onclick = () => window.open(ep.link, '_blank');
+            d.onclick = () => queueDownload(ep.link, currentDetailData.title + ' - ' + ep.title + '.mp4');
             acts.append(p, d); row.append(t, acts); frag.appendChild(row);
         });
         container.appendChild(frag);
