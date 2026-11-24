@@ -106,7 +106,6 @@ jobs:
           cat > app/src/main/AndroidManifest.xml <<'EOF2'
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
               <uses-permission android:name="android.permission.INTERNET"/>
-              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
               <application
                   android:label="@string/app_name"
                   android:icon="@mipmap/ic_launcher"
@@ -131,12 +130,6 @@ jobs:
 
           import android.app.Activity;
           import android.app.AlertDialog;
-          import android.app.DownloadManager;
-          import android.net.Uri;
-          import android.os.Environment;
-          import android.webkit.JavascriptInterface;
-          import android.webkit.URLUtil;
-          import android.widget.Toast;
           import android.content.pm.ActivityInfo;
           import android.graphics.Color;
           import android.os.Bundle;
@@ -177,7 +170,6 @@ jobs:
                   s.setBuiltInZoomControls(false);
 
                   webView.setWebViewClient(new WebViewClient());
-                  webView.addJavascriptInterface(new DownloadBridge(), "PKDownload");
                   webView.setWebChromeClient(new WebChromeClient() {
                       @Override
                       public void onShowCustomView(View view, CustomViewCallback callback) {
@@ -220,37 +212,6 @@ jobs:
                       webView.restoreState(savedInstanceState);
                   } else {
                       webView.loadUrl("https://movieshub32.github.io/Pk-Movies/");
-                  }
-              }
-
-              // JavaScript bridge for authorized direct file downloads only.
-              private class DownloadBridge {
-                  @JavascriptInterface
-                  public void start(String url, String fileName) {
-                      runOnUiThread(() -> {
-                          try {
-                              if (url == null || !(url.startsWith("https://") || url.startsWith("http://"))) {
-                                  Toast.makeText(MainActivity.this, "Invalid download URL", Toast.LENGTH_SHORT).show();
-                                  return;
-                              }
-                              String safeName = (fileName == null || fileName.trim().isEmpty())
-                                  ? URLUtil.guessFileName(url, null, null) : fileName.trim();
-                              safeName = safeName.replaceAll("[^a-zA-Z0-9._ -]", "_");
-                              DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-                              request.setTitle(safeName);
-                              request.setDescription("PK MOVIES download");
-                              request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                              request.setAllowedOverMetered(true);
-                              request.setAllowedOverRoaming(false);
-                              request.setDestinationInExternalPublicDir(Environment.DIRECTORY_MOVIES, safeName);
-                              request.setMimeType("video/*");
-                              DownloadManager manager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-                              manager.enqueue(request);
-                              Toast.makeText(MainActivity.this, "Download started: " + safeName, Toast.LENGTH_LONG).show();
-                          } catch (Exception e) {
-                              Toast.makeText(MainActivity.this, "Could not start download", Toast.LENGTH_SHORT).show();
-                          }
-                      });
                   }
               }
 
